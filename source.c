@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "list.h"
+#include "packedSet.h"
 /*
 	TODO:
 		-dynamic type allocation
@@ -19,6 +19,9 @@ typedef struct{
 	componentInitFunc initFunc;
 }Component;
 Component componentType[MAX_COMPONENTS];//Describes the component types (max 8)
+
+List deleted = {0};
+unsigned int deletedCount=0;
 
 char entities[MAX_COMPONENTS][MAX_ENTITIES];//describes what components belong to the entity
 
@@ -78,9 +81,13 @@ void HumanUpdate(int entityID){
 	printf("This human is %.2f meters tall\n",human->height);
 }
 
-
+void ECSStartup(){
+    PushBack(&deleted,malloc(sizeof(short)*100),sizeof(short));//initialize the deleted array
+    deletedCount=0;
+}
 
 int main(int argc,char** argv){
+    ECSStartup();
 	humanID = RegisterComponent(sizeof(Human),HumanInit);
 	if(humanID == -1) return 0;
 
