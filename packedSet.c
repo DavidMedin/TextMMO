@@ -6,7 +6,7 @@ PackedSet CreatePackedSet(unsigned int itemSize, unsigned int itemPoolCount) {
     PackedSet set = {0};
     set.itemPoolCount = itemPoolCount;
     set.itemSize = itemSize;
-    PushBack(&set.sparse,malloc(sizeof(int)*itemPoolCount),sizeof(int));
-    PushBack(&set.packed,malloc(itemSize*itemPoolCount),itemSize);
+    PushBack(&set.sparse.list,malloc(sizeof(int)*itemPoolCount),sizeof(int));
+    PushBack(&set.packed.list,malloc(itemSize*itemPoolCount),itemSize);
     return set;
 }

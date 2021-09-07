@@ -55,6 +55,7 @@ void NewIter(List* list,Iter* iter){
 }
 Iter MakeIter(List* list){
 	Iter tmpIter={0};
+    tmpIter.i = -1;//I don't like this. because it is unsigned. but it increments first anyways so whatever.
 	tmpIter.root=list;
 	tmpIter.next=list->start;
 	return tmpIter;
