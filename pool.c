@@ -1,6 +1,6 @@
 #include "pool.h"
 
-void *PL_GetItem(Pool pool, short eID) {
+void *PL_GetItem(Pool pool,unsigned short eID) {
     //check to see if this is in currently allocated space
     //if it is not, throw an error
 
@@ -36,7 +36,7 @@ void _PL_NewArray(Pool* pool) {
     }else printf("Did not need to allocate new memory. why?\n");
 }
 
-short PL_GetNextItem(Pool* pool) {
+unsigned short PL_GetNextItem(Pool* pool) {
     //check to see if pool can hold another item
     if(pool->itemCount == pool->list.count*POOL_SIZE){
         //allocate memory
@@ -45,7 +45,7 @@ short PL_GetNextItem(Pool* pool) {
         //this should NEVER happen. Just printing cause this might bite me in the ass later
         printf("Oh no! Pool didn't resize when adding an item. things are bad. check %d %s\n",__LINE__,__FILE__);
     }
-    return ++pool->itemCount-1;
+    return ++pool->itemCount-(short)1;
 }
 
 void *PL_GetFirstItem(Pool pool) {

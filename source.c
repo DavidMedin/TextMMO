@@ -4,7 +4,6 @@
 
 #include "ecs.h"
 
-//------------------
 int humanID;
 typedef struct{
 	int health;
@@ -43,8 +42,8 @@ void PrintPoolStuff(){
     printf("---------------\n");
     For_Each(components,iter){
         Component* comp = Iter_Val(iter,Component);
-        int packedCount = comp->data.packed.list.count;
-        int sparseCount = comp->data.sparse.list.count;
+        unsigned int packedCount = comp->data.packed.list.count;
+        unsigned int sparseCount = comp->data.sparse.list.count;
         printf("component %d :\n\tpacked count: %d\n",iter.i,packedCount);
         printf("\tsparse count: %d\n",sparseCount);
     }
@@ -56,6 +55,7 @@ void PrintPoolStuff(){
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     ECSStartup();
+
     PrintPoolStuff();
     humanID = RegisterComponent(sizeof(Human),HumanInit);
     printf("The human ID is %d\n",humanID);
@@ -81,8 +81,8 @@ int main(int argc,char** argv){
     daveHuman->name = "Dave";
 
 
-    CallSystem(HumanUpdate,humanID);
-    CallSystem(InteractSystem,talkID);
+    //CallSystem(HumanUpdate,humanID);
+    //CallSystem(InteractSystem,talkID);
 
     DestroyEntity(dave);
     DestroyEntity(jim);

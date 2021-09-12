@@ -65,33 +65,33 @@ void DestroyEntity(int entityID){
     }
     For_Each(components,iter){
         Component* comp = Iter_Val(iter,Component);
-        short* sparseSlot = (short*)PL_GetItem(comp->data.sparse,(short)entityID);
+        unsigned short* sparseSlot = (unsigned short*)PL_GetItem(comp->data.sparse,(unsigned short)entityID);
         if(*sparseSlot != 0){
             //reorganize sparse and packed sets
-            void* packedSlot = PL_GetItem(comp->data.packed,(short)(*sparseSlot-1));
+            void* packedSlot = PL_GetItem(comp->data.packed,(unsigned short)(*sparseSlot-1));
             //get last packed slot
             unsigned int componentCount = comp->data.packed.itemCount;
-            void* lastSlot = PL_GetItem(comp->data.packed,(short)(componentCount-1));
+            void* lastSlot = PL_GetItem(comp->data.packed,(unsigned short)(componentCount-1));
             int lastEntity = *(int*)lastSlot;
-            void* lastSparsePointer = PL_GetItem(comp->data.sparse,(short)lastEntity);
+            void* lastSparsePointer = PL_GetItem(comp->data.sparse,(unsigned short)lastEntity);
             memcpy(packedSlot,lastSlot,comp->data.packed.itemSize);
-            *(short*)lastSparsePointer = *sparseSlot;
+            *(unsigned short*)lastSparsePointer = *sparseSlot;
             *sparseSlot = 0;//this is what we save 0 for
             comp->data.packed.itemCount--;
-            //TODO: potentially free data.
-           // while(comp->data.packed.itemCount <= (comp->data.packed.list.count-1)*POOL_SIZE){
-           //     Pool* set = &comp->data.packed;
-           //     Iter removeIter = {0};
-           //     removeIter.this = set->list.end;
-           //     removeIter.next = set->list.end->next;
-           //     removeIter.last = set->list.end->last;
-           //     removeIter.root = &set->list;
-           //     removeIter.i = -1;
-           //     RemoveElement(&removeIter);
-           // }
+            //had to cast to int because unsigned ints were overflowing. int is good math.
+           while((short)comp->data.packed.itemCount <= ((short)comp->data.packed.list.count-1)*POOL_SIZE){
+                Pool* set = &comp->data.packed;
+                Iter removeIter = {0};
+                removeIter.this = set->list.end;
+                removeIter.next = set->list.end->next;
+                removeIter.last = set->list.end->last;
+                removeIter.root = &set->list;
+                removeIter.i = -1;
+                RemoveElement(&removeIter);
+            }
 
-            short* nextDeleted = PL_GetItem(deleted,PL_GetNextItem(&deleted));
-            *nextDeleted = (short)entityID;
+            unsigned short* nextDeleted = PL_GetItem(deleted,PL_GetNextItem(&deleted));
+            *nextDeleted = (unsigned short)entityID;
         }
     }
     //find entity in versions
@@ -107,15 +107,15 @@ void AddComponent(int entityID,int componentID){
         if(componentID == iter.i){
             //this component
             Component* comp = Iter_Val(iter,Component);
-            short compID = PL_GetNextItem(&comp->data.packed);
-            short* sparseEntry = PL_GetItem(comp->data.sparse,(short)entityID);
+            unsigned short compID = PL_GetNextItem(&comp->data.packed);
+            unsigned short* sparseEntry = PL_GetItem(comp->data.sparse,(short)entityID);
             if(sparseEntry==NULL){
-                printf("Error trying to get entity (%d) from unallocated space\n",(short)entityID);
+                printf("Error trying to get entity (%d) from unallocated space\n",(unsigned short)entityID);
             }
-            *sparseEntry = (short)(compID+1);//+1 because 0 is reserved for INVALID. everything is
+            *sparseEntry = (unsigned short)(compID+1);//+1 because 0 is reserved for INVALID. everything is
             // +1 for indexing set.packed.
-            void* packedEntry = PL_GetItem(comp->data.packed,(short)(compID));
-            *(int*)packedEntry = entityID;
+            void* packedEntry = PL_GetItem(comp->data.packed,(unsigned short)(compID));
+            *(int*)packedEntry = entityID;//int for entire entity id, eID and version
             comp->initFunc(((char*)packedEntry)+sizeof(int));
         }
     }
@@ -125,15 +125,17 @@ void CallSystem(SystemFunc func,int componentID){
         if(iter.i==componentID){
             //this is the component in question
             Component* compType = Iter_Val(iter,Component);
-            unsigned int itemsLeft = compType->data.packed.itemCount;
+            int itemsLeft = compType->data.packed.itemCount;//we're using an int because it can hold all of unsigned
+            // short, and can have negatives
             For_Each(compType->data.packed.list,arrayIter){
                 char* array = Iter_Val(arrayIter,char);
-                for(int i = 0;i < ((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);i++){
+                for(unsigned short i = 0;i < (unsigned short)((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);i++){
                     func(*(int*)&array[i*compType->data.itemSize]);
                 }
                 itemsLeft -=  ((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);
-                if(itemsLeft <= 0) return;//ideally, we would delete extra arrays, but whatever.
+                if(itemsLeft <= 0) break;//ideally, we would delete extra arrays, but whatever.
             }
+            return;//catches both done with for loop and count == zero
         }
     }
     printf("Couldn't find component with ID %d\n",componentID);
@@ -146,9 +148,10 @@ void* GetComponent(int componentID,int entityID){
     For_Each(components,iter){
         if(iter.i == componentID){
             Component* comp = Iter_Val(iter,Component);
-            short sparseIndex = *(short*)PL_GetItem(comp->data.sparse,(short)entityID);
+            unsigned short sparseIndex = *(unsigned short*)PL_GetItem(comp->data.sparse,(unsigned short)entityID);
             if(sparseIndex != 0){
-                void* componentData = PL_GetItem(comp->data.packed,(short)(sparseIndex-1));//-1 because 0 is NULL.
+                void* componentData = PL_GetItem(comp->data.packed,(unsigned short)(sparseIndex-1));//-1 because 0 is
+                // NULL.
                 return (char*)componentData+sizeof(int);
             }else{
                 //this entity doesn't have this component
