@@ -3,6 +3,7 @@
 #define VERSION(eID) ((short*)&eID)[1]
 typedef void (*componentInitFunc)(void*);
 typedef void(*SystemFunc)(int);//int is the entity ID.
+typedef int Entity;
 typedef struct{
     PackedSet data;
     componentInitFunc initFunc;

@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "ecs.h"
-
+//TODO: another thing to do is create unit tests. IDK how but it is perhaps a good idea
+/*
 int humanID;
 typedef struct{
 	int health;
@@ -37,6 +38,33 @@ void InteractSystem(int eID){
     Talkable* talk = GetComponent(talkID,eID);
     printf("did you hit the %c key?\n",talk->interactKey);
 }
+*/
+
+int inventoryID,itemID;
+typedef struct{
+    Entity item;
+}Inventory;
+typedef struct{
+    char* name;
+}Item;
+void InventoryInit(void* rawInv){
+    Inventory* inv = rawInv;
+    //TODO: Create a 'NULL' entity
+    inv->item = 0;
+}
+void PrintInventory(int entity){
+    Inventory* inv = GetComponent(inventoryID,entity);
+    Item* containedItem = GetComponent(itemID,inv->item);
+    if(containedItem != NULL){
+        printf("This inventory contains a %s!\n",containedItem->name);
+    }else{
+        inv->item = 0;//NULL, i guess. Look at todo in invinit.
+    }
+}
+void ItemInit(void* rawItem){
+    Item* item = rawItem;
+    item->name = "Sword";//default value
+}
 
 void PrintPoolStuff(){
     printf("---------------\n");
@@ -51,52 +79,23 @@ void PrintPoolStuff(){
     printf("versions count : %d\n",versions.list.count);
     printf("--------------\n");
 }
-
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     ECSStartup();
+    inventoryID = RegisterComponent(sizeof(inventoryID),InventoryInit);
+    itemID = RegisterComponent(sizeof(Item),ItemInit);
 
-    PrintPoolStuff();
-    humanID = RegisterComponent(sizeof(Human),HumanInit);
-    printf("The human ID is %d\n",humanID);
-    talkID = RegisterComponent(sizeof(Talkable),TalkableInit);
-    printf("The talkable ID is %d\n",talkID);
+    Entity item = CreateEntity();
+    Entity inv = CreateEntity();
+    AddComponent(item, itemID);
+    AddComponent(inv,inventoryID);
 
-    int jim = CreateEntity();
-    printf("Jim's entity ID is %d, and his version is %d\n",(short)jim,((short*)(&jim))[1]);
-    int dave = CreateEntity();
-    printf("Dave's entity ID is %d, and his version is %d\n",(short)dave,((short*)(&dave))[1]);
-    int shopkeeper = CreateEntity();
-    printf("The shopkeeper's ID is %d, and his version is %d\n",(short)shopkeeper,((short*)(&shopkeeper))[1]);
+    ((Inventory*)GetComponent(inventoryID,inv))->item = item;
+    ((Item*) GetComponent(itemID,item))->name = "potion (++str)";
 
-    AddComponent(jim,humanID);
-    AddComponent(dave,humanID);
-    AddComponent(shopkeeper,humanID);
-    AddComponent(dave,talkID);
-    AddComponent(shopkeeper,talkID);
-    PrintPoolStuff();
-    Human* jimHuman = (Human*) GetComponent(humanID,jim);
-    jimHuman->name = "Jim";
-    Human* daveHuman = (Human*) GetComponent(humanID,dave);
-    daveHuman->name = "Dave";
-
-
-    //CallSystem(HumanUpdate,humanID);
-    //CallSystem(InteractSystem,talkID);
-
-    DestroyEntity(dave);
-    DestroyEntity(jim);
-    DestroyEntity(shopkeeper);
-    PrintPoolStuff();
-
-    CallSystem(HumanUpdate,humanID);
-    dave = CreateEntity();
-    printf("Dave's entity ID is %d, and his version is %d\n",(short)dave,((short*)(&dave))[1]);
-    AddComponent(dave,humanID);
-    AddComponent(dave,talkID);
-    PrintPoolStuff();
-    CallSystem(HumanUpdate,humanID);
-    CallSystem(InteractSystem,talkID);
+    CallSystem(PrintInventory,inventoryID);
+    DestroyEntity(item);
+    CallSystem(PrintInventory,inventoryID);
 
     return 0;
 }
