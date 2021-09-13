@@ -12,6 +12,8 @@ set(SOURCE_FILES
         packedSet.h
         source.c
         pool.c
-        pool.h ecs.c ecs.h)
+        pool.h ecs.c ecs.h
+        input.h
+        input.c)
 add_executable(Textlicious ${SOURCE_FILES})
 

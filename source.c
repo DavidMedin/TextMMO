@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "ecs.h"
-//TODO: Add HasEntity function
+#include "input.h"
+//TODO: Add HasComponent function
 //TODO: Add multi component system calls
 //TODO: think about events
 
@@ -98,6 +99,20 @@ int main(int argc,char** argv){
     humanHuman->hands[1] = sword;
 
     Attack(human,1,orc);
+    while(1){
+        int size;
+        char* line = GetLine(&size);
+        char* context;
+        char* token = strtok_s(line," ",&context);
+        while(token != NULL){
+            if(strcmp(token,"break") == 0){
+                goto leave;
+            }
+            token = strtok_s(NULL," ",&context);
+        }
+        free(line);
+    }
+    leave:;
 /*
  *  While -Game loop
  *      get input

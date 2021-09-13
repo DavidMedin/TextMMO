@@ -46,13 +46,15 @@ Link PushBack(List* list,void* data,size_t dataSize){
 	return AddNode(list,list->count,data,dataSize);
 }
 
-void NewIter(List* list,Iter* iter){
+void NewIter(List* list,Iter* iter)
+{
 	iter->i=0;
 	iter->root=list;
 	iter->next=list->start;
 	iter->last=NULL;
 	iter->this=NULL;
 }
+
 Iter MakeIter(List* list){
 	Iter tmpIter={0};
     tmpIter.i = -1;//I don't like this. because it is unsigned. but it increments first anyways so whatever.
