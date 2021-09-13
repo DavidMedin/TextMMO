@@ -1,15 +1,24 @@
 #include "pool.h"
 
-void *PL_GetItem(Pool pool,unsigned short eID) {
+void *PL_GetItem(Pool pool,unsigned short eID) {//eID starts at 1
     //check to see if this is in currently allocated space
     //if it is not, throw an error
-
-    if(eID >= pool.list.count * POOL_SIZE){
+    if(eID == 0){
+        printf("attempt to index pool with NULL entity (0)\n");
+        return NULL;
+    }
+    if(eID > pool.list.count * POOL_SIZE){
         printf("Error getting unallocated eID\n");
         return NULL;
     }
-    int poolIndex = (int)ceilf(((float)eID+1)/POOL_SIZE)-1;
-    int lastItemIndex = eID - (poolIndex*POOL_SIZE);
+    //eID / POOL_SIZE -> how many pools can you fit in it?
+    //Ceilf(^) -> ok but we want an integer. if eID is 100, ^ is 1, so Ceilf is 1; any more and it is 2
+    //-1 -> ok but we want zero to be the ifrst pool for multiplication/offset reasons
+    int poolIndex = (int)ceilf(((float)eID)/POOL_SIZE)-1;
+    //poolIndex*POOL_SIZE -> Get pool offset in id's
+    //eID - ^ -> remove the previous pools-worth of id's from eID. get only the index into the pool eID is in.
+    //-1 -> if poolIndex = 0 and eID is 1, it should result in 0. because it is index space.
+    int lastItemIndex = eID - (poolIndex*POOL_SIZE)-1;
     char* byteData = NULL;
     For_Each(pool.list,iter){
         if(iter.i == poolIndex){
@@ -25,7 +34,7 @@ void *PL_GetItem(Pool pool,unsigned short eID) {
 }
 
 void *PL_GetLastItem(Pool pool) {
-    return PL_GetItem(pool,pool.itemCount);//-1??
+    return PL_GetItem(pool,pool.itemCount+1);
 }
 
 void _PL_NewArray(Pool* pool) {
@@ -45,7 +54,8 @@ unsigned short PL_GetNextItem(Pool* pool) {
         //this should NEVER happen. Just printing cause this might bite me in the ass later
         printf("Oh no! Pool didn't resize when adding an item. things are bad. check %d %s\n",__LINE__,__FILE__);
     }
-    return ++pool->itemCount-(short)1;
+    //TODO: From order 77 v
+    return ++pool->itemCount;
 }
 
 void *PL_GetFirstItem(Pool pool) {

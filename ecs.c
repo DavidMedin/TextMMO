@@ -19,6 +19,9 @@ int RegisterComponent(int typesize,componentInitFunc initFunc){
     return componentID++;
 }
 int IsEntityValid(int entity){
+    if((unsigned short)entity == 0){
+        return 0;
+    }
     void* registeredEntity = PL_GetItem(versions,(short)entity);
     if(registeredEntity == 0){
         return 0;
@@ -34,7 +37,7 @@ int IsEntityValid(int entity){
 
 int CreateEntity(){
     //Is there anything in the deleted array?
-    short eID;
+    unsigned short eID;
     if(deleted.itemCount != 0){
         //yup!
         //Use the first as our new entity, and move the last in the array to the beginning
@@ -71,9 +74,10 @@ void DestroyEntity(int entityID){
             void* packedSlot = PL_GetItem(comp->data.packed,(unsigned short)(*sparseSlot-1));
             //get last packed slot
             unsigned int componentCount = comp->data.packed.itemCount;
-            void* lastSlot = PL_GetItem(comp->data.packed,(unsigned short)(componentCount-1));
+            void* lastSlot = PL_GetItem(comp->data.packed,(unsigned short)(componentCount));
             int lastEntity = *(int*)lastSlot;
             void* lastSparsePointer = PL_GetItem(comp->data.sparse,(unsigned short)lastEntity);
+            // space to index space
             memcpy(packedSlot,lastSlot,comp->data.packed.itemSize);
             *(unsigned short*)lastSparsePointer = *sparseSlot;
             *sparseSlot = 0;//this is what we save 0 for
@@ -107,7 +111,8 @@ void AddComponent(int entityID,int componentID){
         if(componentID == iter.i){
             //this component
             Component* comp = Iter_Val(iter,Component);
-            unsigned short compID = PL_GetNextItem(&comp->data.packed);
+            unsigned short compID = PL_GetNextItem(&comp->data.packed);//the index (+1) into the packed set where we
+            // will write our shit
             unsigned short* sparseEntry = PL_GetItem(comp->data.sparse,(short)entityID);
             if(sparseEntry==NULL){
                 printf("Error trying to get entity (%d) from unallocated space\n",(unsigned short)entityID);
@@ -142,7 +147,8 @@ void CallSystem(SystemFunc func,int componentID){
 }
 void* GetComponent(int componentID,int entityID){
     if(!IsEntityValid(entityID)){
-        printf("Tried to get component of invalid entity! E:%d V:%d\n",ID(entityID),VERSION(entityID));
+        //this is *a* way of testing if an entity is invalid
+        //printf("Tried to get component of invalid entity! E:%d V:%d\n",ID(entityID),VERSION(entityID));
         return NULL;
     }
     For_Each(components,iter){

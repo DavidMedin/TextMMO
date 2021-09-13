@@ -49,16 +49,17 @@ typedef struct{
 }Item;
 void InventoryInit(void* rawInv){
     Inventory* inv = rawInv;
-    //TODO: Create a 'NULL' entity
     inv->item = 0;
 }
 void PrintInventory(int entity){
     Inventory* inv = GetComponent(inventoryID,entity);
-    Item* containedItem = GetComponent(itemID,inv->item);
-    if(containedItem != NULL){
-        printf("This inventory contains a %s!\n",containedItem->name);
-    }else{
-        inv->item = 0;//NULL, i guess. Look at todo in invinit.
+    if(inv->item != 0) {
+        Item *containedItem = GetComponent(itemID, inv->item);
+        if (containedItem != NULL) {
+            printf("This inventory contains a %s!\n", containedItem->name);
+        } else {
+            inv->item = 0;//NULL
+        }
     }
 }
 void ItemInit(void* rawItem){
@@ -96,6 +97,12 @@ int main(int argc,char** argv){
     CallSystem(PrintInventory,inventoryID);
     DestroyEntity(item);
     CallSystem(PrintInventory,inventoryID);
-
+/*
+ *  While -Game loop
+ *      get input
+ *      process what it means -> switch; very basic
+ *      call system based on what it is
+ *          EX: Player attacks Orc. Call Players attack function -> calls Orc's damage function
+ */
     return 0;
 }
