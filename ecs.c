@@ -125,7 +125,7 @@ void AddComponent(int entityID,int componentID){
         }
     }
 }
-void CallSystem(SystemFunc func,int componentID){
+void CallSystem(SystemFunc func,int componentID,void* randomData){
     For_Each(components,iter){
         if(iter.i==componentID){
             //this is the component in question
@@ -135,7 +135,7 @@ void CallSystem(SystemFunc func,int componentID){
             For_Each(compType->data.packed.list,arrayIter){
                 char* array = Iter_Val(arrayIter,char);
                 for(unsigned short i = 0;i < (unsigned short)((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);i++){
-                    func(*(int*)&array[i*compType->data.itemSize]);
+                    func(*(int*)&array[i*compType->data.itemSize],randomData);
                 }
                 itemsLeft -=  ((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);
                 if(itemsLeft <= 0) break;//ideally, we would delete extra arrays, but whatever.
@@ -145,6 +145,8 @@ void CallSystem(SystemFunc func,int componentID){
     }
     printf("Couldn't find component with ID %d\n",componentID);
 }
+
+
 void* GetComponent(int componentID,int entityID){
     if(!IsEntityValid(entityID)){
         //this is *a* way of testing if an entity is invalid

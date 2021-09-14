@@ -19,6 +19,9 @@ typedef struct{
 typedef struct{
     int damage;//how much damage when waking somebody/thing
 }Item;
+typedef struct{
+    char friendly;
+}AI;
 
 void MeatBagInit(void* rawMeat){
     MeatBag* you = rawMeat;
@@ -34,6 +37,9 @@ void ItemInit(void* rawItem){
     Item* item = rawItem;
     item->damage = 20;
 }
+void AIInit(void* rawAI){
+    ((AI*)rawAI)->friendly = 0;
+}
 void DealDamage(Entity defender,int damage){
     MeatBag* meat = GetComponent(meatID,defender);
     if(meat != NULL){
@@ -43,6 +49,35 @@ void DealDamage(Entity defender,int damage){
         return;
     }
 }
+
+Entity foundEntity = 0;//Will be the LAST humanoid that has this name;
+void WhoIs(int eID,void* searchVoid){//For Humanoids
+    Humanoid* human = GetComponent(humanID,eID);
+    char* search = searchVoid;
+    char* token = strtok_s(NULL," ",&search);
+
+    char* nameDe = malloc(strlen(human->name)+1);
+    strcpy(nameDe,human->name);
+    nameDe[strlen(human->name)]=0;
+    char* nameContext;
+    char* nameToken = strtok_s(nameDe," ",&nameContext);
+    while(token != NULL){
+        if(nameToken == NULL){
+            foundEntity = eID;
+            break;
+        }
+        if(strcmp(token,nameToken) != 0){
+            break;
+        }
+        token = strtok_s(NULL," ",&search);
+       nameToken = strtok_s(NULL," ",&nameContext);
+    }
+    if(nameToken == NULL){
+        foundEntity = eID;
+    }
+    free(nameDe);
+}
+
 void Attack(Entity attacker,int hand,Entity defender){
     //attacker is attacking defender with their {hand} hand!
     if(hand < 0 || hand > 1){
@@ -72,6 +107,9 @@ void Attack(Entity attacker,int hand,Entity defender){
         printf("Either attacker or defender doesn't have a Humanoid component!\n");
     }
 }
+void AIUpdate(Entity entity){
+
+}
 
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
@@ -100,16 +138,27 @@ int main(int argc,char** argv){
 
     Attack(human,1,orc);
     while(1){
+        //player turn
         int size;
         char* line = GetLine(&size);
         char* context;
         char* token = strtok_s(line," ",&context);
-        while(token != NULL){
-            if(strcmp(token,"break") == 0){
+        if(token != NULL && strcmp(token,"attack") == 0){
+            //char* defender = strtok_s(NULL," ",&context);
+            //find the entity that cooresponds
+            CallSystem(WhoIs,humanID,context);
+            if(foundEntity != 0){
+                //found the entity
+                Attack(human,1,foundEntity);
+
+            }
+        }
+        /*while(token != NULL){
+            if(strstr(token,"break") == 0){
                 goto leave;
             }
             token = strtok_s(NULL," ",&context);
-        }
+        }*/
         free(line);
     }
     leave:;
