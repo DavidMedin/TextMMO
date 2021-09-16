@@ -1,8 +1,4 @@
-//
-// Created by David on 9/13/2021.
-//
-
-#include "input.h"
+#include "termInput.h"
 #include "pool.h"
 
 //Don't look at me like that. This isn't convoluted at all

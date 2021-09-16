@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 11)
 include_directories(.)
 
 set(SOURCE_FILES
+        termInput.c
         list.c
         list.h
         packedSet.c
@@ -13,7 +14,6 @@ set(SOURCE_FILES
         source.c
         pool.c
         pool.h ecs.c ecs.h
-        input.h
-        input.c)
+        termInput.h)
 add_executable(Textlicious ${SOURCE_FILES})
 

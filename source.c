@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "ecs.h"
-#include "input.h"
+#include "termInput.h"
 //TODO: Add HasComponent function
 //TODO: Add multi component system calls
 //TODO: think about events
@@ -50,6 +50,7 @@ void DealDamage(Entity defender,int damage){
     }
 }
 
+/*
 Entity foundEntity = 0;//Will be the LAST humanoid that has this name;
 void WhoIs(int eID,void* searchVoid){//For Humanoids
     Humanoid* human = GetComponent(humanID,eID);
@@ -77,6 +78,7 @@ void WhoIs(int eID,void* searchVoid){//For Humanoids
     }
     free(nameDe);
 }
+ */
 
 void Attack(Entity attacker,int hand,Entity defender){
     //attacker is attacking defender with their {hand} hand!
@@ -136,6 +138,16 @@ int main(int argc,char** argv){
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
 
+
+    //create some items
+    for(int i = 0;i < 32;i++){
+        Entity tmpItem = CreateEntity();
+        AddComponent(tmpItem,itemID);
+    }
+    //For_System(itemID,itemIter){
+    //    printf("damage: %d\ti: %d\te: %d\n",((Item*)itemIter.ptr)->damage,itemIter.i,itemIter.ent);
+    //}
+
     Attack(human,1,orc);
     while(1){
         //player turn
@@ -146,19 +158,44 @@ int main(int argc,char** argv){
         if(token != NULL && strcmp(token,"attack") == 0){
             //char* defender = strtok_s(NULL," ",&context);
             //find the entity that cooresponds
-            CallSystem(WhoIs,humanID,context);
+            //CallSystem(WhoIs,humanID,context);
+            Entity foundEntity = 0;
+            For_System(humanID,humanoidIter){
+                Humanoid* human = SysIterVal(humanoidIter,Humanoid);
+                //search the name
+                //create copy of name string
+                char* delimitName = malloc(strlen(human->name)+1);
+                delimitName[strlen(human->name)] = 0;
+                strcpy(delimitName,human->name);
+                //delimit it
+                char* nameContext;
+                char* phraseContext = context;
+                char* phraseTok = strtok_s(NULL," ",&phraseContext);
+                char* nameTok = strtok_s(delimitName," ",&nameContext);
+                //start matching words
+                while(strcmp(phraseTok,nameTok) == 0){
+                    nameTok = strtok_s(NULL," ",&nameContext);
+                    phraseTok = strtok_s(NULL," ",&phraseContext);
+                    if(nameTok == NULL){
+                        //if the we run out of source tokens first, it is a success
+                        foundEntity = humanoidIter.ent;
+                        goto exit;
+                    }if(phraseTok == NULL){
+                        goto exit;//not found
+                    }
+                }
+            }
+            exit:;
             if(foundEntity != 0){
                 //found the entity
                 Attack(human,1,foundEntity);
-
+                if(((MeatBag*)GetComponent(meatID,foundEntity))->health <= 0){
+                    printf("Knockout!\n");
+                    free(line);
+                    break;
+                }
             }
         }
-        /*while(token != NULL){
-            if(strstr(token,"break") == 0){
-                goto leave;
-            }
-            token = strtok_s(NULL," ",&context);
-        }*/
         free(line);
     }
     leave:;

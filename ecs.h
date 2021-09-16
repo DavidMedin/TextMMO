@@ -13,7 +13,20 @@ extern List components;
 Pool deleted;
 Pool versions;
 
-#define For_Comp()
+#define For_System(component,iter) for(SysIter iter = ForSysCreateIter(component);ForSysTest(iter,component); \
+ForSysInc(&iter, \
+component))
+#define SysIterVal(sysIter,type) ((type*)sysIter.ptr)
+typedef struct{
+    int i;
+    void* ptr;
+    Entity ent;
+    Iter arrayIter;
+    Component* comp;
+}SysIter;
+SysIter ForSysCreateIter(int compID);
+int ForSysTest(SysIter iter,int componentID);
+void ForSysInc(SysIter* iter,int componentID);
 
 void ECSStartup();
 int RegisterComponent(int typesize,componentInitFunc initFunc);

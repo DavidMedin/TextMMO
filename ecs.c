@@ -171,3 +171,42 @@ void* GetComponent(int componentID,int entityID){
     printf("No component with id %d\n",componentID);
     return NULL;
 }
+
+SysIter ForSysCreateIter(int compID){
+    SysIter newIter = {0};
+    //find Component
+    For_Each(components,compIter){
+        if(compIter.i == compID){
+            //this is our component
+            newIter.arrayIter = MakeIter(&Iter_Val(compIter,Component)->data.packed.list);
+            Inc(&newIter.arrayIter);//big dumb
+            newIter.ptr = (int*)newIter.arrayIter.this->data+1;
+            newIter.ent = *((int*)newIter.ptr-1);
+            newIter.comp = Iter_Val(compIter,Component);
+        }
+    }
+    return newIter;
+}
+int ForSysTest(SysIter iter,int componentID){
+    //test if we have reached the end
+    if(iter.i == iter.comp->data.packed.itemCount){//i is an index, not a count. +1
+        //we have reached the end
+        return 0;
+    }
+    return 1;
+}
+void ForSysInc(SysIter* iter,int componentID){
+    //use i to find if we need to change array
+    if(((iter->i+1) % POOL_SIZE) == 0){
+        //might not work, but this should mean that it is time to change arrays
+        if(Inc(&iter->arrayIter) == 0){
+            //no more arrays, do something that will cause ForSysTest to trip
+            //return;
+        }
+        //update ptr
+        iter->ptr = ((int*)iter->arrayIter.this->data+1);
+    }else
+        iter->ptr = iter->ptr+iter->comp->data.itemSize;//inc ptr
+    iter->i++;
+    iter->ent = *((int*)iter->ptr-1);//inc net
+}
