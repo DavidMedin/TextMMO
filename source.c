@@ -4,11 +4,9 @@
 
 #include "ecs.h"
 #include "termInput.h"
-//TODO: Add HasComponent function
-//TODO: Add multi component system calls
 //TODO: think about events
 
-int meatID,humanID,itemID;
+int meatID,humanID,itemID,aiID;
 typedef struct{
     int health;//max 100
 }MeatBag;
@@ -50,36 +48,6 @@ void DealDamage(Entity defender,int damage){
     }
 }
 
-/*
-Entity foundEntity = 0;//Will be the LAST humanoid that has this name;
-void WhoIs(int eID,void* searchVoid){//For Humanoids
-    Humanoid* human = GetComponent(humanID,eID);
-    char* search = searchVoid;
-    char* token = strtok_s(NULL," ",&search);
-
-    char* nameDe = malloc(strlen(human->name)+1);
-    strcpy(nameDe,human->name);
-    nameDe[strlen(human->name)]=0;
-    char* nameContext;
-    char* nameToken = strtok_s(nameDe," ",&nameContext);
-    while(token != NULL){
-        if(nameToken == NULL){
-            foundEntity = eID;
-            break;
-        }
-        if(strcmp(token,nameToken) != 0){
-            break;
-        }
-        token = strtok_s(NULL," ",&search);
-       nameToken = strtok_s(NULL," ",&nameContext);
-    }
-    if(nameToken == NULL){
-        foundEntity = eID;
-    }
-    free(nameDe);
-}
- */
-
 void Attack(Entity attacker,int hand,Entity defender){
     //attacker is attacking defender with their {hand} hand!
     if(hand < 0 || hand > 1){
@@ -109,8 +77,55 @@ void Attack(Entity attacker,int hand,Entity defender){
         printf("Either attacker or defender doesn't have a Humanoid component!\n");
     }
 }
-void AIUpdate(Entity entity){
 
+int AttackString(Entity attacker,List tokens){
+    //find the entity that cooresponds
+    Entity foundEntity = 0;
+    For_System(humanID,humanoidIter){
+        Humanoid* human = SysIterVal(humanoidIter,Humanoid);
+        //search the name
+        //create copy of name string
+        char* delimitedName = malloc(strlen(human->name)+1);
+        strcpy(delimitedName,human->name);
+        delimitedName[strlen(human->name)] = 0;
+        List nameList = Listify(delimitedName);
+        Iter nameIter = MakeIter(&nameList);
+        Iter tokenIter = MakeIter(&tokens);
+        Inc(&tokenIter);//skip the action token
+        while(1){
+            int tok = Inc(&tokenIter);
+            int nam = Inc(&nameIter);
+            if(nam == 0) {
+                foundEntity = humanoidIter.ent;
+                break;//matched all name tokens
+            }
+            // }
+            if(tok == 0) break;//didn't match all name tokens
+           //check if they are the same
+           if(strcmp(nameIter.this->data,tokenIter.this->data)!=0){
+              //these are not the same
+              break;
+           }
+        }
+        //foundEntity = humanoidIter.ent;
+        free(delimitedName);
+    }
+    if(foundEntity != 0){
+        //found the entity
+        Attack(attacker,1,foundEntity);
+        if(((MeatBag*)GetComponent(meatID,foundEntity))->health <= 0){
+            //printf("Knockout!\n");
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void AIUpdate(Entity entity){
+    //goes for all the AI entities
+    AI* ai = GetComponent(aiID,entity);
+    Humanoid* humanoid = GetComponent(humanID,entity);
+    printf("%s is %s\n",humanoid->name,ai->friendly ? "friendly" : "an enemy");
 }
 
 int main(int argc,char** argv){
@@ -120,6 +135,7 @@ int main(int argc,char** argv){
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit);
     meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit);
     itemID = RegisterComponent(sizeof(Item),ItemInit);
+    aiID = RegisterComponent(sizeof(AI),AIInit);
 
     //create entities
 
@@ -130,6 +146,7 @@ int main(int argc,char** argv){
     Entity orc = CreateEntity();
     AddComponent(orc,humanID);
     AddComponent(orc,meatID);
+    AddComponent(orc,aiID);
     ((Humanoid*) GetComponent(humanID,orc))->name = "the orc";
 
     Entity human = CreateEntity();
@@ -138,66 +155,49 @@ int main(int argc,char** argv){
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
 
-
-    //create some items
-    for(int i = 0;i < 32;i++){
-        Entity tmpItem = CreateEntity();
-        AddComponent(tmpItem,itemID);
-    }
-    //For_System(itemID,itemIter){
-    //    printf("damage: %d\ti: %d\te: %d\n",((Item*)itemIter.ptr)->damage,itemIter.i,itemIter.ent);
-    //}
-
-    Attack(human,1,orc);
     while(1){
         //player turn
         int size;
         char* line = GetLine(&size);
-        char* context;
-        char* token = strtok_s(line," ",&context);
-        if(token != NULL && strcmp(token,"attack") == 0){
-            //char* defender = strtok_s(NULL," ",&context);
-            //find the entity that cooresponds
-            //CallSystem(WhoIs,humanID,context);
-            Entity foundEntity = 0;
-            For_System(humanID,humanoidIter){
-                Humanoid* human = SysIterVal(humanoidIter,Humanoid);
-                //search the name
-                //create copy of name string
-                char* delimitName = malloc(strlen(human->name)+1);
-                delimitName[strlen(human->name)] = 0;
-                strcpy(delimitName,human->name);
-                //delimit it
-                char* nameContext;
-                char* phraseContext = context;
-                char* phraseTok = strtok_s(NULL," ",&phraseContext);
-                char* nameTok = strtok_s(delimitName," ",&nameContext);
-                //start matching words
-                while(strcmp(phraseTok,nameTok) == 0){
-                    nameTok = strtok_s(NULL," ",&nameContext);
-                    phraseTok = strtok_s(NULL," ",&phraseContext);
-                    if(nameTok == NULL){
-                        //if the we run out of source tokens first, it is a success
-                        foundEntity = humanoidIter.ent;
-                        goto exit;
-                    }if(phraseTok == NULL){
-                        goto exit;//not found
-                    }
-                }
-            }
-            exit:;
-            if(foundEntity != 0){
-                //found the entity
-                Attack(human,1,foundEntity);
-                if(((MeatBag*)GetComponent(meatID,foundEntity))->health <= 0){
-                    printf("Knockout!\n");
-                    free(line);
+        List tokens = Listify(line);
+        if(tokens.count != 0) {
+            char *action = tokens.start->data;
+            if (strcmp(action, "attack") == 0) {
+                if (AttackString(human, tokens) == 0) {
+                    printf("Knockout\n");
                     break;
                 }
+            } else if (strcmp(action, "look") == 0) {
+                //print all entities that isn't you
+                printf("You look around and see");
+                int found = 0;
+                For_System(humanID, humanoidIter) {
+                    Humanoid *humanComp = SysIterVal(humanoidIter, Humanoid);
+                    if (humanoidIter.ent != human) {
+                        //this isn't us
+                        printf(" %s,", humanComp->name);
+                        found = 1;
+                    }
+                }
+                if (found == 0) {
+                    printf("nobody");
+                } else
+                    printf("\b");
+                printf(".\n");
+                CallSystem(AIUpdate,humanID,aiID);
+            } else if (strcmp(action, "spawn") == 0) {
+                //spawn a goblin
+                printf("a wild goblin appears!\n");
+                Entity goblin = CreateEntity();
+                AddComponent(goblin, humanID);
+                ((Humanoid *) GetComponent(humanID, goblin))->name = "the goblin";
+                AddComponent(goblin, meatID);
+                AddComponent(goblin,aiID);
             }
         }
         free(line);
     }
+
     leave:;
 /*
  *  While -Game loop

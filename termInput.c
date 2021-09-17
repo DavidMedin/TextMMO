@@ -1,8 +1,10 @@
 #include "termInput.h"
 #include "pool.h"
+#include "string.h"
 
 //Don't look at me like that. This isn't convoluted at all
 char* GetLine(int* size){
+    *size = 0;
     Pool buffer = CreatePool(1);
     while(1){
         char next = getc(stdin);
@@ -23,4 +25,16 @@ char* GetLine(int* size){
     buff[*size] = 0;
     FreeList(&buffer.list);
     return buff;
+}
+
+List Listify(char* input){
+    List tokens = {0};
+    //tokenize
+    char* context;
+    char* token = strtok_s(input," ",&context);
+    while(token!=NULL){
+        PushBack(&tokens,token,strlen(token));
+        token = strtok_s(NULL," ",&context);
+    }
+    return tokens;
 }

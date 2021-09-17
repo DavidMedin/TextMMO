@@ -2,7 +2,7 @@
 #define ID(eID) (short)eID
 #define VERSION(eID) ((short*)&eID)[1]
 typedef void (*componentInitFunc)(void*);
-typedef void(*SystemFunc)(int,void*);//int is the entity ID.
+typedef void(*SystemFunc)(int);//int is the entity ID.
 typedef int Entity;
 typedef struct{
     PackedSet data;
@@ -34,5 +34,9 @@ int IsEntityValid(int entity);
 int CreateEntity();
 void DestroyEntity(int entityID);
 void AddComponent(int entityID,int componentID);
-void CallSystem(SystemFunc func,int componentID,void* randomData);
+#define CallSystem(func,...) _CallSystem(func,__VA_ARGS__,-1)//I don't like -1. Components don't have negative
+// values, which means that we *could* use unsigned numbers, that would make this bad.if we really wanted to we could
+// have an 'index space' and a 'null space' like with entity ids.
+void _CallSystem(SystemFunc func,int componentID,...);
 void* GetComponent(int componentID,int entityID);
+int HasComponent(Entity ent,int compID);

@@ -1,4 +1,5 @@
 #include "ecs.h"
+#include <stdarg.h>
 
 
 List components ={0};
@@ -125,7 +126,7 @@ void AddComponent(int entityID,int componentID){
         }
     }
 }
-void CallSystem(SystemFunc func,int componentID,void* randomData){
+void _CallSystem(SystemFunc func,int componentID,...){
     For_Each(components,iter){
         if(iter.i==componentID){
             //this is the component in question
@@ -135,7 +136,22 @@ void CallSystem(SystemFunc func,int componentID,void* randomData){
             For_Each(compType->data.packed.list,arrayIter){
                 char* array = Iter_Val(arrayIter,char);
                 for(unsigned short i = 0;i < (unsigned short)((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);i++){
-                    func(*(int*)&array[i*compType->data.itemSize],randomData);
+                    //i is the entity ID, so check that it has all components that we want
+                    va_list vl;
+                    va_start(vl,componentID);
+                    int component;
+                    int noHave = 0;
+                    int entity =  *(int*)&array[i*compType->data.itemSize];
+                    while((component = va_arg(vl,Entity)) != -1){
+                        if(HasComponent(entity,component) == 0) {
+                            //this entity doesn't have this component
+                            noHave = 1;
+                            break;
+                        }
+                    }
+                    if(!noHave){
+                        func(entity);
+                    }
                 }
                 itemsLeft -=  ((itemsLeft < POOL_SIZE) ? itemsLeft : POOL_SIZE);
                 if(itemsLeft <= 0) break;//ideally, we would delete extra arrays, but whatever.
@@ -209,4 +225,18 @@ void ForSysInc(SysIter* iter,int componentID){
         iter->ptr = iter->ptr+iter->comp->data.itemSize;//inc ptr
     iter->i++;
     iter->ent = *((int*)iter->ptr-1);//inc net
+}
+
+int HasComponent(Entity ent, int compID) {
+    For_Each(components,compIter){
+        if(compIter.i == compID){
+            //this is our component
+            short* sparseSlot = PL_GetItem(Iter_Val(compIter,Component)->data.sparse,ent);
+            if(*sparseSlot == 0){
+               return 0;//this entity doesn't have this component
+            }else return 1;
+        }
+    }
+    printf("Tried to call HasComponent with a component (%d) that doesn't exist!\n",compID);
+    return 0;
 }
