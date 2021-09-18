@@ -54,7 +54,6 @@ unsigned short PL_GetNextItem(Pool* pool) {
         //this should NEVER happen. Just printing cause this might bite me in the ass later
         printf("Oh no! Pool didn't resize when adding an item. things are bad. check %d %s\n",__LINE__,__FILE__);
     }
-    //TODO: From order 77 v
     return ++pool->itemCount;
 }
 

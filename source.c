@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "ecs.h"
 #include "termInput.h"
 //TODO: think about events
 
+Entity character;
 int meatID,humanID,itemID,aiID;
 typedef struct{
     int health;//max 100
@@ -58,29 +60,38 @@ void Attack(Entity attacker,int hand,Entity defender){
     Humanoid* attackHuman = GetComponent(humanID,attacker);
     Humanoid* defenderHuman = GetComponent(humanID,defender);
     if(attackHuman != NULL && defenderHuman != NULL){
-        Item* wackItem = GetComponent(itemID,attackHuman->hands[hand]);
-        if(wackItem != 0){
-            //there is an item in hand! Wack time
-            MeatBag* defenderMeat = GetComponent(meatID,defender);
-            if(defenderMeat != NULL){
+        MeatBag* defenderMeat = GetComponent(meatID,defender);
+        if(defenderMeat != NULL){
+            Item* wackItem = GetComponent(itemID,attackHuman->hands[hand]);
+            if(wackItem != 0){
+                //there is an item in hand! Wack time
+                //MeatBag* defenderMeat = GetComponent(meatID,defender);
                 DealDamage(defender,wackItem->damage);
                 printf("%s delt %d to %s and now %s has %d health!\n",attackHuman->name,wackItem->damage,
                        defenderHuman->name,defenderHuman->name,defenderMeat->health);
             }else{
-                printf("defender doesn't have a meatbag component!\n");
-                return;
+                //printf("Item doesn't have the Item component!\n");
+                //this guy is punching the other guy
+                DealDamage(defender,5);
+                printf("%s punched %s for %d and now %s has %d health!\n",attackHuman->name,
+                       defenderHuman->name,5,defenderHuman->name,defenderMeat->health);
+            }
+            if(defenderMeat->health <= 0){
+                printf("Knockout!\n");
+                DestroyEntity(defender);
             }
         }else{
-            printf("Item doesn't have the Item component!\n");
+
+            printf("defender doesn't have a meatbag component!\n");
+            return;
         }
     }else{
         printf("Either attacker or defender doesn't have a Humanoid component!\n");
     }
 }
 
-int AttackString(Entity attacker,List tokens){
+void AttackString(Entity attacker,List tokens){
     //find the entity that cooresponds
-    Entity foundEntity = 0;
     For_System(humanID,humanoidIter){
         Humanoid* human = SysIterVal(humanoidIter,Humanoid);
         //search the name
@@ -96,7 +107,6 @@ int AttackString(Entity attacker,List tokens){
             int tok = Inc(&tokenIter);
             int nam = Inc(&nameIter);
             if(nam == 0) {
-                foundEntity = humanoidIter.ent;
                 break;//matched all name tokens
             }
             // }
@@ -110,26 +120,51 @@ int AttackString(Entity attacker,List tokens){
         //foundEntity = humanoidIter.ent;
         free(delimitedName);
     }
-    if(foundEntity != 0){
-        //found the entity
-        Attack(attacker,1,foundEntity);
-        if(((MeatBag*)GetComponent(meatID,foundEntity))->health <= 0){
-            //printf("Knockout!\n");
-            return 0;
-        }
-    }
-    return 1;
 }
 
 void AIUpdate(Entity entity){
     //goes for all the AI entities
     AI* ai = GetComponent(aiID,entity);
     Humanoid* humanoid = GetComponent(humanID,entity);
-    printf("%s is %s\n",humanoid->name,ai->friendly ? "friendly" : "an enemy");
+    //attack anything that is 'friendly' or doens't have an AI component but is a humanoid
+    List attackList = {0};
+    For_System(aiID,aiIter){
+        AI* testAI = aiIter.ptr;
+        if(testAI->friendly != ai->friendly){//these guys are enemies
+            Entity* tmpEnt = malloc(sizeof(Entity));
+            *tmpEnt = aiIter.ent;
+            PushBack(&attackList,tmpEnt,sizeof(Entity));
+        }
+    }
+    if(ai->friendly == 0){
+        Entity* tmpEnt = malloc(sizeof(Entity));
+        *tmpEnt = character;
+        PushBack(&attackList,tmpEnt,sizeof(Entity));
+    }
+
+    //pick someone to attack
+    tryAgain:;
+    unsigned int attackIndex = rand() % ((unsigned int)attackList.count);
+    For_Each(attackList,attackIter){
+        if(attackIter.i == attackIndex){
+            //Attack this person
+            Entity defender = *(int*)attackIter.this->data;
+            MeatBag* meat = GetComponent(meatID,defender);
+            if(meat != NULL){
+                if(meat->health <= 0) goto tryAgain;//this is simple. Don't @ me, John
+                Attack(entity,1,defender);
+                break;
+            }
+        }
+    }
+
+    FreeList(&attackList);
 }
+
 
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
+    srand(time(NULL));
     ECSStartup();
 
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit);
@@ -143,18 +178,27 @@ int main(int argc,char** argv){
     AddComponent(sword,itemID);
     ((Item*) GetComponent(itemID,sword))->damage = 21;
 
+    Entity orcishSword = CreateEntity();
+    AddComponent(orcishSword,itemID);
+    ((Item*) GetComponent(itemID,orcishSword))->damage = 25;
+
     Entity orc = CreateEntity();
     AddComponent(orc,humanID);
     AddComponent(orc,meatID);
     AddComponent(orc,aiID);
-    ((Humanoid*) GetComponent(humanID,orc))->name = "the orc";
+    Humanoid* orcHuman = GetComponent(humanID,orc);
+    orcHuman->name = "the orc";
+    orcHuman->hands[1] = orcishSword;
+    //((Humanoid*) GetComponent(humanID,orc))->name = "the orc";
 
     Entity human = CreateEntity();
+    character = human;
     AddComponent(human,humanID);AddComponent(human,meatID);
     Humanoid* humanHuman = GetComponent(humanID,human);
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
 
+    printf("type 'help' for help, I guess.\n");
     while(1){
         //player turn
         int size;
@@ -163,10 +207,7 @@ int main(int argc,char** argv){
         if(tokens.count != 0) {
             char *action = tokens.start->data;
             if (strcmp(action, "attack") == 0) {
-                if (AttackString(human, tokens) == 0) {
-                    printf("Knockout\n");
-                    break;
-                }
+                AttackString(human, tokens);
             } else if (strcmp(action, "look") == 0) {
                 //print all entities that isn't you
                 printf("You look around and see");
@@ -184,7 +225,8 @@ int main(int argc,char** argv){
                 } else
                     printf("\b");
                 printf(".\n");
-                CallSystem(AIUpdate,humanID,aiID);
+                free(line);
+                continue;//skip enemy turn
             } else if (strcmp(action, "spawn") == 0) {
                 //spawn a goblin
                 printf("a wild goblin appears!\n");
@@ -193,19 +235,22 @@ int main(int argc,char** argv){
                 ((Humanoid *) GetComponent(humanID, goblin))->name = "the goblin";
                 AddComponent(goblin, meatID);
                 AddComponent(goblin,aiID);
+            }else if(strcmp(action, "help") == 0){
+                //print some helpful stuff
+                printf("Commands----------\n\t*look\t\t--look around\n\t*attack {enemy name}\t\t--attack that "
+                       "bitch\n\t*spawn\t\t--spawn a goblin (for testing stuff)\n\t*help\t\t--you are "
+                       "here\n\t*quit\t\t--imagine quiting, I can't\n");
+                free(line);
+                continue;//skip enemy turn
+            }else if(strcmp(action,"quit") == 0){
+                printf("You are a coward. Big yikes my dude.\n");
+                free(line);
+                break;
             }
         }
         free(line);
+        CallSystem(AIUpdate,humanID,aiID);
     }
-
-    leave:;
-/*
- *  While -Game loop
- *      get input
- *      process what it means -> switch; very basic
- *      call system based on what it is
- *          EX: Player attacks Orc. Call Players attack function -> calls Orc's damage function
- */
 
     return 0;
 }
