@@ -5,6 +5,9 @@
 
 #include "ecs.h"
 #include "termInput.h"
+#include <raylib.h>
+#define WITHOUT_SDL
+#include <SDL_net.h>
 //TODO: think about events
 
 Entity character;
@@ -92,6 +95,7 @@ void Attack(Entity attacker,int hand,Entity defender){
 
 void AttackString(Entity attacker,List tokens){
     //find the entity that cooresponds
+    Entity foundEntity = 0;
     For_System(humanID,humanoidIter){
         Humanoid* human = SysIterVal(humanoidIter,Humanoid);
         //search the name
@@ -107,6 +111,7 @@ void AttackString(Entity attacker,List tokens){
             int tok = Inc(&tokenIter);
             int nam = Inc(&nameIter);
             if(nam == 0) {
+                foundEntity = humanoidIter.ent;
                 break;//matched all name tokens
             }
             // }
@@ -120,12 +125,20 @@ void AttackString(Entity attacker,List tokens){
         //foundEntity = humanoidIter.ent;
         free(delimitedName);
     }
+    if(foundEntity != 0){
+        //found the entity
+        Attack(attacker,1,foundEntity);
+        if(((MeatBag*)GetComponent(meatID,foundEntity))->health <= 0){
+            //printf("Knockout!\n");
+            return;
+        }
+    }
 }
 
 void AIUpdate(Entity entity){
     //goes for all the AI entities
     AI* ai = GetComponent(aiID,entity);
-    Humanoid* humanoid = GetComponent(humanID,entity);
+    //Humanoid* humanoid = GetComponent(humanID,entity);
     //attack anything that is 'friendly' or doens't have an AI component but is a humanoid
     List attackList = {0};
     For_System(aiID,aiIter){
@@ -161,9 +174,15 @@ void AIUpdate(Entity entity){
     FreeList(&attackList);
 }
 
-
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
+
+    //create window
+    int width=800;
+    int height=800;
+    InitWindow(width,height,"Textlicious");
+    SetTargetFPS(60);
+
     srand(time(NULL));
     ECSStartup();
 
@@ -199,6 +218,14 @@ int main(int argc,char** argv){
     humanHuman->hands[1] = sword;
 
     printf("type 'help' for help, I guess.\n");
+    while(!WindowShouldClose()) {
+        //draw to window
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawText("This is some text",160,200,20,LIGHTGRAY);
+        EndDrawing();
+    }
+    CloseWindow();
     while(1){
         //player turn
         int size;
@@ -249,8 +276,19 @@ int main(int argc,char** argv){
             }
         }
         free(line);
+
+
         CallSystem(AIUpdate,humanID,aiID);
     }
+
+    leave:;
+/*
+ *  While -Game loop
+ *      get input
+ *      process what it means -> switch; very basic
+ *      call system based on what it is
+ *          EX: Player attacks Orc. Call Players attack function -> calls Orc's damage function
+ */
 
     return 0;
 }
