@@ -9,7 +9,9 @@
 #include "ecs.h"
 #include "vec.h"
 #include "termInput.h"
-//TODO: think about events
+//TODO: add gui
+//TODO: add server/client deal
+
 
 Entity character;
 int meatID,humanID,itemID,aiID;
@@ -215,17 +217,23 @@ int main(int argc,char** argv){
         BeginDrawing();
         ClearBackground(DARKGRAY);
         char capture = GetCharPressed();
-        if(capture){
-            char* test = *((char*)VecLast(&input));
-            *(char*)VecLast(&input) = capture;
-            *(char*) VecNext(&input) = 0;
-            //*((char*) PL_GetLastItem(input)) = capture;
-            //char* nextItem = PL_GetItem(input,PL_GetNextItem(&input));
-            //*nextItem = 0;
+        int key = GetKeyPressed();
+        switch(key){
+            case KEY_BACKSPACE:{
+                if(input.last != 0){
+                    *VecGet(input,input.last-1) = 0;
+                    input.last--;
+                }
+                break;
+            }
+            default:{
+                if(capture) {
+                    printf("%c\n",capture);
+                    *(char*)VecLast(&input) = capture;
+                    *(char*) VecNext(&input) = 0;
+                }
+            }
         }
-        //For_Each(input.input,iter){
-        //
-        //}
         DrawTextEx(miniWaku,input.data,(Vector2){200,200},30,1,WHITE);
         EndDrawing();
     }

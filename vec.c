@@ -7,13 +7,13 @@ Vec VecMake(int size,int initCount){
     if(initCount != 0){
         tmpVec.data = malloc(size*(initCount/VECTOR_ALLOC_SIZE+1)*VECTOR_ALLOC_SIZE);
         tmpVec.size = size;
-        tmpVec.count = initCount;
-        tmpVec.allocCount = initCount/VECTOR_ALLOC_SIZE+1;
+        tmpVec.last = 0;
+        tmpVec.allocCount = (((initCount-1)/VECTOR_ALLOC_SIZE)+1)*VECTOR_ALLOC_SIZE;
     }
     return tmpVec;
 }
 void* VecNext(Vec* vec){
-    if(++vec->count > vec->allocCount){
+    if((++vec->last) > vec->allocCount){
         //alloc more mem
         vec->allocCount += VECTOR_ALLOC_SIZE;
         char* tmpData = malloc(vec->allocCount * vec->size);
@@ -21,16 +21,16 @@ void* VecNext(Vec* vec){
         free(vec->data);
         vec->data = tmpData;
     }
-    return &((char*)vec->data)[vec->count-1];
+    return &((char*)vec->data)[vec->last];
 }
 void* VecLast(Vec* vec){
-    return &((char*)vec->data)[vec->count-1];
+    return &(((char*)vec->data)[vec->last]);
 }
 
 void VecDestroy(Vec* vec){
     free(vec->data);
     vec->size = 0;
-    vec->count = 0;
+    vec->last = 0;
     vec->allocCount = 0;
     vec->data = NULL;
 }

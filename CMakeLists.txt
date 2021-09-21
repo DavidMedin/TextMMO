@@ -12,12 +12,12 @@ FetchContent_Declare(
         GIT_REPOSITORY "https://github.com/raysan5/raylib"
         GIT_TAG 3.7.0
 )
-
 FetchContent_GetProperties(RAYLIB)
 if (NOT raylib_POPULATED)
     FetchContent_Populate(RAYLIB)
     add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
 endif ()
+
 FetchContent_Declare(
         NNG
         GIT_REPOSITORY "https://github.com/nanomsg/nng"
