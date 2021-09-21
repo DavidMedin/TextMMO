@@ -3,6 +3,9 @@
 #include <string.h>
 #include <time.h>
 
+#include <raylib.h>
+#include <nng/nng.h>
+
 #include "ecs.h"
 #include "termInput.h"
 //TODO: think about events
