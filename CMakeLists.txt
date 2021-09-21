@@ -10,7 +10,7 @@ include(FetchContent)
 FetchContent_Declare(
         RAYLIB
         GIT_REPOSITORY "https://github.com/raysan5/raylib"
-        GIT_TAG 3.0.0
+        GIT_TAG 3.7.0
 )
 
 FetchContent_GetProperties(RAYLIB)
@@ -39,7 +39,7 @@ set(SOURCE_FILES
         source.c
         pool.c
         pool.h ecs.c ecs.h
-        termInput.h)
+        termInput.h vec.c vec.h)
 add_executable(Textlicious ${SOURCE_FILES})
 target_link_libraries(Textlicious raylib nng)
 target_include_directories(Textlicious PRIVATE ${raylib_SOURCE_DIRS}/include ${nng_SOURCE_DIRS}/include)

@@ -7,6 +7,7 @@
 #include <nng/nng.h>
 
 #include "ecs.h"
+#include "vec.h"
 #include "termInput.h"
 //TODO: think about events
 
@@ -168,6 +169,11 @@ void AIUpdate(Entity entity){
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
+
+    int width=800;
+    int height=800;
+    SetTraceLogLevel(LOG_WARNING);
+    InitWindow(width,height,"Textlicious");
     ECSStartup();
 
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit);
@@ -200,6 +206,31 @@ int main(int argc,char** argv){
     Humanoid* humanHuman = GetComponent(humanID,human);
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
+
+    Font miniWaku = LoadFont("../mini-wakuwaku.ttf");
+    //Pool input = CreatePool(1);
+    Vec input = VecMake(1,100);
+    *(char*)input.data = 0;
+    while(!WindowShouldClose()){
+        BeginDrawing();
+        ClearBackground(DARKGRAY);
+        char capture = GetCharPressed();
+        if(capture){
+            char* test = *((char*)VecLast(&input));
+            *(char*)VecLast(&input) = capture;
+            *(char*) VecNext(&input) = 0;
+            //*((char*) PL_GetLastItem(input)) = capture;
+            //char* nextItem = PL_GetItem(input,PL_GetNextItem(&input));
+            //*nextItem = 0;
+        }
+        //For_Each(input.input,iter){
+        //
+        //}
+        DrawTextEx(miniWaku,input.data,(Vector2){200,200},30,1,WHITE);
+        EndDrawing();
+    }
+    CloseWindow();
+    VecDestroy(&input);
 
     printf("type 'help' for help, I guess.\n");
     while(1){
