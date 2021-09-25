@@ -1,6 +1,7 @@
 #include "vec.h"
 #include <stdlib.h>
 #include <memory.h>
+#include <stdio.h>
 Vec VecMake(int size,int initCount){
     Vec tmpVec={0};
     tmpVec.size = size;
@@ -13,7 +14,7 @@ Vec VecMake(int size,int initCount){
     return tmpVec;
 }
 void* VecNext(Vec* vec){
-    if((++vec->last) > vec->allocCount){
+    if((++vec->last) >= vec->allocCount){
         //alloc more mem
         vec->allocCount += VECTOR_ALLOC_SIZE;
         char* tmpData = malloc(vec->allocCount * vec->size);

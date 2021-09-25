@@ -209,10 +209,15 @@ int main(int argc,char** argv){
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
 
-    Font miniWaku = LoadFont("../mini-wakuwaku.ttf");
+    Font textFont = LoadFont("../FiraCode.ttf");
     //Pool input = CreatePool(1);
     Vec input = VecMake(1,100);
     *(char*)input.data = 0;
+    Rectangle rect = (Rectangle){0,((float)70/100)*(float)height,(float)width,(1-((float)70/100))*(float)height-20};
+    int charRectWidth = (int)rect.width/MeasureText("a",textFont.baseSize);
+    int charRectHeight = (int)rect.height / (textFont.baseSize + textFont.baseSize/2);
+    int maxCharacters = charRectHeight * charRectWidth;
+    printf("%d %d %d\n",charRectWidth,charRectHeight,maxCharacters);
     while(!WindowShouldClose()){
         BeginDrawing();
         ClearBackground(DARKGRAY);
@@ -228,17 +233,31 @@ int main(int argc,char** argv){
             }
             default:{
                 if(capture) {
-                    printf("%c\n",capture);
-                    *(char*)VecLast(&input) = capture;
-                    *(char*) VecNext(&input) = 0;
+                    //printf("%c\n",capture);
+                    if(input.last+1 < maxCharacters) {
+                        *(char *) VecLast(&input) = capture;
+                        *(char *) VecNext(&input) = 0;
+                    }else
+                        printf("you have been denied!\n");
                 }
             }
         }
-        DrawTextEx(miniWaku,input.data,(Vector2){200,200},30,1,WHITE);
+        //printf("%f %f %f %f\n",rect.x,rect.y,rect.width,rect.height);
+        DrawRectangleRec(rect,BLACK);
+        DrawTextRec(textFont,input.data,rect,textFont.baseSize,0,true,WHITE);
+        DrawLine(rect.x+5,rect.y,rect.x+5,rect.y+textFont.baseSize + textFont.baseSize/2,RED);
+        DrawLine(rect.x+5,rect.y + textFont.baseSize + textFont.baseSize/2,rect.x+5,rect.y+(textFont.baseSize + textFont
+        .baseSize/2)*2,RED);
+        DrawLine(rect.x+5,rect.y + textFont.baseSize + textFont.baseSize/2,rect.x+10,rect.y + textFont.baseSize +
+        textFont.baseSize/2,BLUE);
+        //DrawLine(rect.x+5,rect.y+textFont.baseSize,rect.x+5,rect.y+textFont.baseSize+textFont.charsPadding,BLUE);
+        //DrawLine(rect.x+5,rect.y+textFont.baseSize+textFont.charsPadding,rect.x+5,rect.y+textFont.baseSize*2+textFont.charsPadding,RED);
+        //DrawTextEx(miniWaku,input.data,(Vector2){200,200},30,1,WHITE);
         EndDrawing();
     }
     CloseWindow();
     VecDestroy(&input);
+    return 0;
 
     printf("type 'help' for help, I guess.\n");
     while(1){

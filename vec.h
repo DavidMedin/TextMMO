@@ -2,7 +2,7 @@
 typedef struct{
     void* data;
     unsigned int last;
-    unsigned int size;
+    unsigned int size;//size of item
     unsigned int allocCount;
 }Vec;
 
