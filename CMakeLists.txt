@@ -8,17 +8,6 @@ include_directories(.)
 include(FetchContent)
 
 FetchContent_Declare(
-        RAYLIB
-        GIT_REPOSITORY "https://github.com/raysan5/raylib"
-        GIT_TAG 3.7.0
-)
-FetchContent_GetProperties(RAYLIB)
-if (NOT raylib_POPULATED)
-    FetchContent_Populate(RAYLIB)
-    add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
-endif ()
-
-FetchContent_Declare(
         NNG
         GIT_REPOSITORY "https://github.com/nanomsg/nng"
         GIT_TAG v1.5.2
@@ -41,5 +30,5 @@ set(SOURCE_FILES
         pool.h ecs.c ecs.h
         termInput.h vec.c vec.h)
 add_executable(Textlicious ${SOURCE_FILES})
-target_link_libraries(Textlicious raylib nng)
-target_include_directories(Textlicious PRIVATE ${raylib_SOURCE_DIRS}/include ${nng_SOURCE_DIRS}/include)
+target_link_libraries(Textlicious nng)
+target_include_directories(Textlicious PRIVATE ${nng_SOURCE_DIRS}/include)

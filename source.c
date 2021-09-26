@@ -3,7 +3,6 @@
 #include <string.h>
 #include <time.h>
 
-#include <raylib.h>
 #include <nng/nng.h>
 
 #include "ecs.h"
@@ -172,10 +171,6 @@ int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
 
-    int width=800;
-    int height=800;
-    SetTraceLogLevel(LOG_WARNING);
-    InitWindow(width,height,"Textlicious");
     ECSStartup();
 
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit);
@@ -208,56 +203,6 @@ int main(int argc,char** argv){
     Humanoid* humanHuman = GetComponent(humanID,human);
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
-
-    Font textFont = LoadFont("../FiraCode.ttf");
-    //Pool input = CreatePool(1);
-    Vec input = VecMake(1,100);
-    *(char*)input.data = 0;
-    Rectangle rect = (Rectangle){0,((float)70/100)*(float)height,(float)width,(1-((float)70/100))*(float)height-20};
-    int charRectWidth = (int)rect.width/MeasureText("a",textFont.baseSize);
-    int charRectHeight = (int)rect.height / (textFont.baseSize + textFont.baseSize/2);
-    int maxCharacters = charRectHeight * charRectWidth;
-    printf("%d %d %d\n",charRectWidth,charRectHeight,maxCharacters);
-    while(!WindowShouldClose()){
-        BeginDrawing();
-        ClearBackground(DARKGRAY);
-        char capture = GetCharPressed();
-        int key = GetKeyPressed();
-        switch(key){
-            case KEY_BACKSPACE:{
-                if(input.last != 0){
-                    *VecGet(input,input.last-1) = 0;
-                    input.last--;
-                }
-                break;
-            }
-            default:{
-                if(capture) {
-                    //printf("%c\n",capture);
-                    if(input.last+1 < maxCharacters) {
-                        *(char *) VecLast(&input) = capture;
-                        *(char *) VecNext(&input) = 0;
-                    }else
-                        printf("you have been denied!\n");
-                }
-            }
-        }
-        //printf("%f %f %f %f\n",rect.x,rect.y,rect.width,rect.height);
-        DrawRectangleRec(rect,BLACK);
-        DrawTextRec(textFont,input.data,rect,textFont.baseSize,0,true,WHITE);
-        DrawLine(rect.x+5,rect.y,rect.x+5,rect.y+textFont.baseSize + textFont.baseSize/2,RED);
-        DrawLine(rect.x+5,rect.y + textFont.baseSize + textFont.baseSize/2,rect.x+5,rect.y+(textFont.baseSize + textFont
-        .baseSize/2)*2,RED);
-        DrawLine(rect.x+5,rect.y + textFont.baseSize + textFont.baseSize/2,rect.x+10,rect.y + textFont.baseSize +
-        textFont.baseSize/2,BLUE);
-        //DrawLine(rect.x+5,rect.y+textFont.baseSize,rect.x+5,rect.y+textFont.baseSize+textFont.charsPadding,BLUE);
-        //DrawLine(rect.x+5,rect.y+textFont.baseSize+textFont.charsPadding,rect.x+5,rect.y+textFont.baseSize*2+textFont.charsPadding,RED);
-        //DrawTextEx(miniWaku,input.data,(Vector2){200,200},30,1,WHITE);
-        EndDrawing();
-    }
-    CloseWindow();
-    VecDestroy(&input);
-    return 0;
 
     printf("type 'help' for help, I guess.\n");
     while(1){
