@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 4ecee1e910dad0c4db4930b42858ad08
+guid: 14f9434856653c741a582a910df30290
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Fira Code
+  - mini-wakuwaku
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
