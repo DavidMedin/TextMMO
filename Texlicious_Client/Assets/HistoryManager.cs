@@ -15,7 +15,7 @@ public class HistoryManager : MonoBehaviour {
     private Scrollbar _scrollbar;
 
     void Start() {
-        _textPrefab = AssetDatabase.LoadAssetAtPath<Object>("Assets/HistoryEntryPre.prefab");
+        _textPrefab = AssetDatabase.LoadAssetAtPath<Object>("Assets/HistoryEntry.prefab");
         
         //listen to the Text Input
         var input = GameObject.Find("User Input");
@@ -67,13 +67,22 @@ public class HistoryManager : MonoBehaviour {
             print("Object doesn't have this component");
             return;
         }
-        textComp.text = text;
+        //textComp.autoSizeTextContainer = true;
+        //textComp.text = text;
+        if (text[0] == 10)
+        {
+            text = text.Remove(0,1);
+        }
+        textComp.SetText(text);
         //get text height
         //float height = textComp.renderedHeight;
         
         //become child
         obj.transform.SetParent(transform.GetChild(0).GetChild(0).transform,false);
-        textComp.ComputeMarginSize();
+        //textComp.ComputeMarginSize();
+        //textComp.W///I
+        //textComp.SetNativeSize();
+        //textComp.margin = new Vector4(30,30,30,30);
         _inputField.text = "";
         EventSystem.current.SetSelectedGameObject(_inputField.gameObject,null);
         _inputField.OnPointerClick(new PointerEventData(EventSystem.current));
