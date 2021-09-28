@@ -69,22 +69,19 @@ public class HistoryManager : MonoBehaviour {
         }
         //textComp.autoSizeTextContainer = true;
         //textComp.text = text;
-        if (text[0] == 10)
-        {
-            text = text.Remove(0,1);
-        }
-        textComp.SetText(text);
+        //if (text[0] == 10)
+        //{
+        //    text = text.Remove(0,1);
+        //}
+
+        textComp.text = text;
         //get text height
-        //float height = textComp.renderedHeight;
         
         //become child
         obj.transform.SetParent(transform.GetChild(0).GetChild(0).transform,false);
-        //textComp.ComputeMarginSize();
-        //textComp.W///I
-        //textComp.SetNativeSize();
-        //textComp.margin = new Vector4(30,30,30,30);
-        _inputField.text = "";
         EventSystem.current.SetSelectedGameObject(_inputField.gameObject,null);
         _inputField.OnPointerClick(new PointerEventData(EventSystem.current));
+        _inputField.text = "";
+        //print((_inputField.text[0] == 10).ToString());
     }
 }
