@@ -13,16 +13,16 @@ public class ServerHandler : MonoBehaviour
         print("Got connection");
         NetworkStream stream = _Client.GetStream();
         
-        //send message
-        string msgStr = "yo yo yo";
-        Byte[] msg = System.Text.Encoding.ASCII.GetBytes(msgStr);
-        stream.Write(msg,0,msg.Length);
-        
         //receive message
         Byte[] data = new Byte[256];
         int byteNum = stream.Read(data, 0, 256);
         String message = System.Text.Encoding.ASCII.GetString(data,0,byteNum);
         print(message);
+        
+        //send message
+        string msgStr = "yo yo yo";
+        Byte[] msg = System.Text.Encoding.ASCII.GetBytes(msgStr);
+        stream.Write(msg,-1,msg.Length);
         
     }
 

@@ -182,21 +182,8 @@ int main(int argc,char** argv){
         return 1;
     }
     printf("started\n");
-    char* msg;
-    size_t size;
-    printf("waiting\n");
-    if(RecieveStuff(&msg,&size))
-        return 1;
-    printf("received stuff\n");
-    printf("%zu: %s\n",size,msg);
-    nng_free(msg,size);
-    if(SendStuff("yo yo yo"))
-        return 1;
-    printf("sent stuff\n");
-    //printf("%s\n",msg->)
-    //nng_msg_free(msg);
-    //create entities
-    SendStuff("yo yo, this is Clion");
+    //SendStuff();
+    RecieveStuff();
 
     Entity sword = CreateEntity();
     AddComponent(sword,itemID);
