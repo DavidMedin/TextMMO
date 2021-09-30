@@ -183,7 +183,7 @@ int main(int argc,char** argv){
     }
     printf("started\n");
     //SendStuff();
-    RecieveStuff();
+
 
     Entity sword = CreateEntity();
     AddComponent(sword,itemID);

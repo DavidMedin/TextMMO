@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Net.Sockets;
+using System.Text;
 public class ServerHandler : MonoBehaviour
 {
     private TcpClient _Client;
@@ -16,13 +17,13 @@ public class ServerHandler : MonoBehaviour
         //receive message
         Byte[] data = new Byte[256];
         int byteNum = stream.Read(data, 0, 256);
-        String message = System.Text.Encoding.ASCII.GetString(data,0,byteNum);
+        String message = Encoding.ASCII.GetString(data,0,byteNum);
         print(message);
         
         //send message
         string msgStr = "yo yo yo";
-        Byte[] msg = System.Text.Encoding.ASCII.GetBytes(msgStr);
-        stream.Write(msg,-1,msg.Length);
+        Byte[] msg = Encoding.ASCII.GetBytes(msgStr);
+        stream.Write(msg,0,msg.Length);
         
     }
 
