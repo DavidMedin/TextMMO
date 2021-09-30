@@ -8,9 +8,18 @@
 #include "vec.h"
 #include "termInput.h"
 #include <server.h>
-//TODO: add gui
-//TODO: add server/client deal
 
+/*
+ * TODO: Seperate server and client repos
+ * TODO: C# async networking
+ * TODO: play game through network -> unity
+ * TODO: Try to break nng setup
+ * TODO: more game managing stuff (reset, etc.)
+ * TODO: multiplayer
+ * TODO: Unity instruction compressing (look -> 0x5, reset -> 0x6)
+ *      ^ Puts lets strain on network and server
+ * TODO: async NPC enemies (attack every 5 seconds or whatever)
+ */
 
 Entity character;
 int meatID,humanID,itemID,aiID;
@@ -112,6 +121,7 @@ void AttackString(Entity attacker,List tokens){
             int tok = Inc(&tokenIter);
             int nam = Inc(&nameIter);
             if(nam == 0) {
+                Attack(attacker,0,humanoidIter.ent);
                 break;//matched all name tokens
             }
             // }

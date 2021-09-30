@@ -14,6 +14,7 @@ public class HistoryManager : MonoBehaviour {
     private ScrollRect _rect;
     private Scrollbar _scrollbar;
 
+    private ServerHandler server;
     void Start() {
         _textPrefab = AssetDatabase.LoadAssetAtPath<Object>("Assets/HistoryEntry.prefab");
         
@@ -30,15 +31,6 @@ public class HistoryManager : MonoBehaviour {
         }
         _inputField.onSubmit.AddListener(AddTextEntry);
 
-        //var rectObj = GameObject.Find("History");
-        //if (rectObj == null) {
-        //    print("Failed to get the 'History' object");
-        //    return;
-        //}
-
-        //_rect = rectObj.GetComponent<ScrollRect>();
-        //_rect.onValueChanged.AddListener(ScrollReact);
-
         var scrollObj = GameObject.Find("Scrollbar Vertical");
         if (scrollObj == null) {
             print("Failed to get the scrollbar");
@@ -46,6 +38,13 @@ public class HistoryManager : MonoBehaviour {
         }
         //_scrollbar = scrollObj.GetComponent<Scrollbar>();
         //_scrollbar.on;
+        var serverObj = GameObject.Find("Server");
+        if (serverObj == null) {
+            print("Failed to get the server gameobject");
+            return;
+        }
+
+        server = serverObj.GetComponent<ServerHandler>();
     }
 
     // Update is called once per frame
@@ -57,6 +56,7 @@ public class HistoryManager : MonoBehaviour {
         if (text.Equals("")) {
             return;
         }
+        server.Send(text); 
         var obj = PrefabUtility.InstantiatePrefab(_textPrefab) as GameObject;
         if (obj == null) {
             print("Failed to create prefab");
@@ -67,21 +67,14 @@ public class HistoryManager : MonoBehaviour {
             print("Object doesn't have this component");
             return;
         }
-        //textComp.autoSizeTextContainer = true;
-        //textComp.text = text;
-        //if (text[0] == 10)
-        //{
-        //    text = text.Remove(0,1);
-        //}
-
         textComp.text = text;
         //get text height
         
         //become child
         obj.transform.SetParent(transform.GetChild(0).GetChild(0).transform,false);
+        //highlight text box
         EventSystem.current.SetSelectedGameObject(_inputField.gameObject,null);
         _inputField.OnPointerClick(new PointerEventData(EventSystem.current));
         _inputField.text = "";
-        //print((_inputField.text[0] == 10).ToString());
     }
 }

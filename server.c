@@ -41,6 +41,7 @@ void Receive(void* nothing){
     printf("received something\n") ;
     receiveData[nng_aio_count(input)] = 0;
     printf("%s\n",receiveData);
+    RecieveStuff();
 }
 
 int StartStuff(){
