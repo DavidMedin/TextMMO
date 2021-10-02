@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <nng/nng.h>
 
@@ -10,7 +11,11 @@ nng_aio* output;
 nng_aio* input;
 nng_aio* listenIO;
 char* receiveData;
+char* sendBuff;
+unsigned int sendBuffEnd;//index to the end
 
-int StartStuff();
-int SendStuff();
-int RecieveStuff();
+int ServerInit();
+int Sendf(const char* format,...);//writes to output, and sends
+int Send();//sends
+void WriteOutput(const char* format,...);//only writes to output
+int ReceiveListen();

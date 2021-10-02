@@ -10,9 +10,10 @@
 #include <server.h>
 
 /*
- * TODO: Seperate server and client repos
- * TODO: C# async networking
- * TODO: play game through network -> unity
+ * TODO: Client: Graceful disconnect when server goes down,
+ *  starts listening for server again
+ * TODO: hunt down massive new line network send
+ * TODO: async thread safety on server
  * TODO: Try to break nng setup
  * TODO: more game managing stuff (reset, etc.)
  * TODO: multiplayer
@@ -81,17 +82,17 @@ void Attack(Entity attacker,int hand,Entity defender){
                 //there is an item in hand! Wack time
                 //MeatBag* defenderMeat = GetComponent(meatID,defender);
                 DealDamage(defender,wackItem->damage);
-                printf("%s delt %d to %s and now %s has %d health!\n",attackHuman->name,wackItem->damage,
+                Sendf("%s delt %d to %s and now %s has %d health!\n",attackHuman->name,wackItem->damage,
                        defenderHuman->name,defenderHuman->name,defenderMeat->health);
             }else{
                 //printf("Item doesn't have the Item component!\n");
                 //this guy is punching the other guy
                 DealDamage(defender,5);
-                printf("%s punched %s for %d and now %s has %d health!\n",attackHuman->name,
+                Sendf("%s punched %s for %d and now %s has %d health!\n",attackHuman->name,
                        defenderHuman->name,5,defenderHuman->name,defenderMeat->health);
             }
             if(defenderMeat->health <= 0){
-                printf("Knockout!\n");
+                Sendf("Knockout!\n");
                 DestroyEntity(defender);
             }
         }else{
@@ -176,7 +177,58 @@ void AIUpdate(Entity entity){
     FreeList(&attackList);
 }
 
-
+Entity human;
+int quitting = 0;
+void DoAction(char* line){
+    List tokens = Listify(line);
+    if(tokens.count != 0) {
+        char *action = tokens.start->data;
+        if (strcmp(action, "attack") == 0) {
+            AttackString(human, tokens);
+        } else if (strcmp(action, "look") == 0) {
+            //print all entities that isn't you
+            WriteOutput("You look around and see");
+            int found = 0;
+            For_System(humanID, humanoidIter) {
+                Humanoid *humanComp = SysIterVal(humanoidIter, Humanoid);
+                if (humanoidIter.ent != human) {
+                    //this isn't us
+                    if(humanoidIter.i != 0)
+                        WriteOutput(",");
+                    WriteOutput(" %s", humanComp->name);
+                    found = 1;
+                }
+            }
+            if (found == 0) {
+                WriteOutput("nobody");
+            } else{}
+                //WriteOutput("");
+            WriteOutput(".\n");
+            Send();
+            return;
+        } else if (strcmp(action, "spawn") == 0) {
+            //spawn a goblin
+            Sendf("a wild goblin appears!");
+            Entity goblin = CreateEntity();
+            AddComponent(goblin, humanID);
+            ((Humanoid *) GetComponent(humanID, goblin))->name = "the goblin";
+            AddComponent(goblin, meatID);
+            AddComponent(goblin,aiID);
+        }else if(strcmp(action, "help") == 0){
+            //print some helpful stuff
+            Sendf("Commands----------\n\t*look\t--look around\n\t*attack {enemy name}\t--attack that "
+                   "bitch\n\t*spawn\t--spawn a goblin (for testing stuff)\n\t*help\t--you are "
+                   "here\n\t*quit\t--imagine quiting, I can't");
+            return;
+        }else if(strcmp(action,"quit") == 0){
+            Sendf("You are a coward. Big yikes my dude.");
+            quitting = 1;
+            return;
+        }
+    }
+    CallSystem(AIUpdate,humanID,aiID);
+}
+char* receive;
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
@@ -188,12 +240,11 @@ int main(int argc,char** argv){
     itemID = RegisterComponent(sizeof(Item),ItemInit);
     aiID = RegisterComponent(sizeof(AI),AIInit);
 
-    if(StartStuff()){
+    if(ServerInit()){
         return 1;
     }
     printf("started\n");
     //SendStuff();
-
 
     Entity sword = CreateEntity();
     AddComponent(sword,itemID);
@@ -212,65 +263,18 @@ int main(int argc,char** argv){
     orcHuman->hands[1] = orcishSword;
     //((Humanoid*) GetComponent(humanID,orc))->name = "the orc";
 
-    Entity human = CreateEntity();
+    human = CreateEntity();
     character = human;
     AddComponent(human,humanID);AddComponent(human,meatID);
     Humanoid* humanHuman = GetComponent(humanID,human);
     humanHuman->name = "Jimmy";
     humanHuman->hands[1] = sword;
 
-    printf("type 'help' for help, I guess.\n");
-    while(1){
-        //player turn
-        int size;
-        char* line = GetLine(&size);
-        List tokens = Listify(line);
-        if(tokens.count != 0) {
-            char *action = tokens.start->data;
-            if (strcmp(action, "attack") == 0) {
-                AttackString(human, tokens);
-            } else if (strcmp(action, "look") == 0) {
-                //print all entities that isn't you
-                printf("You look around and see");
-                int found = 0;
-                For_System(humanID, humanoidIter) {
-                    Humanoid *humanComp = SysIterVal(humanoidIter, Humanoid);
-                    if (humanoidIter.ent != human) {
-                        //this isn't us
-                        printf(" %s,", humanComp->name);
-                        found = 1;
-                    }
-                }
-                if (found == 0) {
-                    printf("nobody");
-                } else
-                    printf("\b");
-                printf(".\n");
-                free(line);
-                continue;//skip enemy turn
-            } else if (strcmp(action, "spawn") == 0) {
-                //spawn a goblin
-                printf("a wild goblin appears!\n");
-                Entity goblin = CreateEntity();
-                AddComponent(goblin, humanID);
-                ((Humanoid *) GetComponent(humanID, goblin))->name = "the goblin";
-                AddComponent(goblin, meatID);
-                AddComponent(goblin,aiID);
-            }else if(strcmp(action, "help") == 0){
-                //print some helpful stuff
-                printf("Commands----------\n\t*look\t\t--look around\n\t*attack {enemy name}\t\t--attack that "
-                       "bitch\n\t*spawn\t\t--spawn a goblin (for testing stuff)\n\t*help\t\t--you are "
-                       "here\n\t*quit\t\t--imagine quiting, I can't\n");
-                free(line);
-                continue;//skip enemy turn
-            }else if(strcmp(action,"quit") == 0){
-                printf("You are a coward. Big yikes my dude.\n");
-                free(line);
-                break;
-            }
+    while(quitting != 1){
+        if(receive != NULL){
+            DoAction(receive);
+            receive = NULL;
         }
-        free(line);
-        CallSystem(AIUpdate,humanID,aiID);
     }
 
     return 0;
