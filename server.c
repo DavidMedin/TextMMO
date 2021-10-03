@@ -31,10 +31,9 @@ void Listen(void* nothing){
         Fatal("input nng_aio_set_iov",rv);
         return;
     }
-    //Sendf("Welcome!");
-    //Sendf("type 'help' for help, I guess.\n");
+    Sendf("Welcome!");
+    Sendf("type 'help' for help, I guess.\n");
     ReceiveListen();
-    nng_stream_listener_accept(listener,listenIO);
 }
 void SendCallback(void* nothing){
     printf("Sent Item\n");
@@ -44,6 +43,7 @@ void ReceiveCallBack(void* nothing){
     int rv;
     if((rv=nng_aio_result(input))!=0){
         Fatal("nng_aio_result",rv);
+        nng_stream_listener_accept(listener,listenIO);
         return;
     }
     printf("received something\n") ;
@@ -57,7 +57,7 @@ void ReceiveCallBack(void* nothing){
 int ServerInit(){
     sendBuffEnd = 0;
     int rv;
-    if((rv= nng_stream_listener_alloc(&listener,"tcp://localhost:8080"))!=0){
+    if((rv= nng_stream_listener_alloc(&listener,"tcp://127.0.0.1:8080"))!=0){
         Fatal("nng_stream_listener_alloc",rv);
         return 1;
     }
