@@ -10,11 +10,6 @@
 #include <server.h>
 
 /*
- * TODO: Client: Graceful disconnect when server goes down,
- *  starts listening for server again
- * TODO: hunt down massive new line network send
- * TODO: async thread safety on server
- * TODO: Try to break nng setup
  * TODO: more game managing stuff (reset, etc.)
  * TODO: multiplayer
  * TODO: Unity instruction compressing (look -> 0x5, reset -> 0x6)
@@ -268,14 +263,20 @@ int main(int argc,char** argv){
     AddComponent(human,humanID);AddComponent(human,meatID);
     Humanoid* humanHuman = GetComponent(humanID,human);
     humanHuman->name = "Jimmy";
-    humanHuman->hands[1] = sword;
+    humanHuman->hands[0] = sword;
 
     while(quitting != 1){
+        nng_mtx_lock(mut);
         if(receive != NULL){
+            if(strcmp(receive,"quit") == 0){
+                break;
+            }
             DoAction(receive);
             receive = NULL;
         }
+        nng_mtx_unlock(mut);
     }
+    ServerEnd();
 
     return 0;
 }

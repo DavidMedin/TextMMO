@@ -6,9 +6,13 @@ void Fatal(char* func,int error){
 }
 
 void Listen(void* nothing){
-    printf("Found a connection\n");
 
     int rv;
+    if((rv=nng_aio_result(listenIO))!=0) {
+        Fatal("Listen nng_aio_result", rv);
+        return;
+    }
+    printf("Found a connection\n");
     out = nng_aio_get_output(listenIO,0);
     in = out;
     if(out == NULL){
@@ -42,21 +46,32 @@ extern char* receive;
 void ReceiveCallBack(void* nothing){
     int rv;
     if((rv=nng_aio_result(input))!=0){
-        Fatal("nng_aio_result",rv);
+        if(rv == 7){//7 is object closed, probably freeing everything
+            return;
+        }
+        Fatal("Receive nng_aio_result",rv);
+        printf("%d\n",rv);
         nng_stream_listener_accept(listener,listenIO);
         return;
     }
     printf("received something\n") ;
     receiveData[nng_aio_count(input)] = 0;
     printf("%s\n",receiveData);
+    nng_mtx_lock(mut);
     receive = receiveData;
-    //DoAction(receiveData);
-    ReceiveListen();
+    nng_mtx_unlock(mut);
+    if(strcmp(receive,"quit")!=0){
+        ReceiveListen();//not quitting
+    }
 }
 
 int ServerInit(){
     sendBuffEnd = 0;
     int rv;
+    if((rv = nng_mtx_alloc(&mut))!=0){
+        Fatal("nng_mtx_alloc",rv);
+        return 1;
+    }
     if((rv= nng_stream_listener_alloc(&listener,"tcp://127.0.0.1:8080"))!=0){
         Fatal("nng_stream_listener_alloc",rv);
         return 1;
@@ -82,6 +97,17 @@ int ServerInit(){
     }
     nng_stream_listener_accept(listener,listenIO);
     return 0;
+}
+void ServerEnd(){
+    printf("freeing\n");
+    nng_stream_listener_free(listener);
+    nng_aio_wait(input);
+    nng_aio_free(input);
+    nng_aio_free(output);
+    nng_aio_free(listenIO);
+    nng_stream_close(out);
+    nng_stream_free(out);
+    nng_mtx_free(mut);
 }
 
 int Send(){
