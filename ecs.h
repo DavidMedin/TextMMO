@@ -3,11 +3,13 @@
 #define ID(eID) (short)eID
 #define VERSION(eID) ((short*)&eID)[1]
 typedef void (*componentInitFunc)(void*);
+typedef void (*componentDestroyFunc)(void*);
 typedef void(*SystemFunc)(int);//int is the entity ID.
 typedef int Entity;
 typedef struct{
     PackedSet data;
     componentInitFunc initFunc;
+    componentDestroyFunc destroyFunc;
 }Component;
 
 extern List components;
@@ -30,7 +32,7 @@ int ForSysTest(SysIter iter,int componentID);
 void ForSysInc(SysIter* iter,int componentID);
 
 void ECSStartup();
-int RegisterComponent(int typesize,componentInitFunc initFunc);
+int RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFunc destroyFunc);
 int IsEntityValid(int entity);
 int CreateEntity();
 void DestroyEntity(int entityID);

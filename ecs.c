@@ -7,10 +7,11 @@ void ECSStartup(){
     versions = CreatePool(sizeof(short));
     deleted = CreatePool(sizeof(short));
 }
-int RegisterComponent(int typesize,componentInitFunc initFunc){
+int RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFunc destroyFunc){
     static int componentID = 0;
     Component* comp = malloc(sizeof(Component));
     comp->initFunc = initFunc;
+    comp->destroyFunc = destroyFunc;//not required to be specified
     PackedSet* set = &comp->data;
     set->itemSize = typesize+sizeof(int);
     set->itemPoolCount = POOL_SIZE;
@@ -79,6 +80,12 @@ void DestroyEntity(int entityID){
             int lastEntity = *(int*)lastSlot;
             void* lastSparsePointer = PL_GetItem(comp->data.sparse,(unsigned short)lastEntity);
             // space to index space
+
+            //deconstruct
+            if(comp->destroyFunc != NULL){
+                comp->destroyFunc(((char*)packedSlot)+sizeof(short));//packed(+short) is where the data lives
+            }
+
             memcpy(packedSlot,lastSlot,comp->data.packed.itemSize);
             *(unsigned short*)lastSparsePointer = *sparseSlot;
             *sparseSlot = 0;//this is what we save 0 for

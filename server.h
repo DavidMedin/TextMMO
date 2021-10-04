@@ -14,17 +14,22 @@ typedef struct{
     nng_aio* input;
     nng_aio* output;
     nng_stream* stream;
+    char* receiveBuff;
+    char* sendBuff;
+    unsigned int sendBuffEnd;//index to the end
 }Connection;
-extern List conns;//list of Connections
+void ConnectionInit(void* emptyConn);
+void FreeConnection(Connection* conn);
+void DestroyConnection(void* conn);//literally the same as FreeConnection
+                                    //but it makes ecs happy
+//extern List conns;//list of Connections -> replaced by ecs
 
 nng_mtx* mut;
-char* receiveData;
-char* sendBuff;
-unsigned int sendBuffEnd;//index to the end
 
 int ServerInit();
 void ServerEnd();
-int Sendf(const char* format,...);//writes to output, and sends
-int Send();//sends
-void WriteOutput(const char* format,...);//only writes to output
-int ReceiveListen();
+int Sendf(Connection* conn,const char* format,...);//writes to output, and sends
+int Sendfa(Connection* conn,const char* format,va_list args);//writes to output, and sends
+int Send(Connection* conn);//sends
+void WriteOutput(Connection* conn,const char* format,...);//only writes to output
+int ReceiveListen(Connection* conn);

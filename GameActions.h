@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "ecs.h"
 #include "server.h"
 void Look(Entity looker);

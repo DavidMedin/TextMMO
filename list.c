@@ -55,6 +55,16 @@ void NewIter(List* list,Iter* iter)
 	iter->this=NULL;
 }
 
+Iter List_FindPointer(List* list,void* ptr){
+    For_Each(list,listIter){
+        if(listIter.this->data == ptr){
+            return listIter;
+        }
+    }
+    printf("Failed to find ptr in list\n");
+    return (Iter){0};
+}
+
 Iter MakeIter(List* list){
 	Iter tmpIter={0};
     tmpIter.i = -1;//I don't like this. because it is unsigned. but it increments first anyways so whatever.

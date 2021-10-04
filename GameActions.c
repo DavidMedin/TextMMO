@@ -1,29 +1,51 @@
 #include "GameActions.h"
 #include "source.h"
+extern List conns;
+void TellEveryone(const char* format,...){
+    va_list args;
+    va_start(args,format);
+    For_Each(conns,connIter){
+        Sendfa(Iter_Val(connIter,Connection),format,args);
+    }
+}
 void Look(Entity looker){
+    Connection* conn = GetComponent(connID,looker);
+    if(conn == NULL){
+        printf("This entity (%d) doesn't have the 'Connection' component!\n",looker);
+        return;
+    }
     //print all entities that isn't you
-    WriteOutput("You look around and see");
+    WriteOutput(conn,"You look around and see");
     int found = 0;
     For_System(humanID, humanoidIter) {
         Humanoid *humanComp = SysIterVal(humanoidIter, Humanoid);
         if (humanoidIter.ent != looker) {
             //this isn't us
             if(humanoidIter.i != 0)
-                WriteOutput(",");
-            WriteOutput(" %s", humanComp->name);
+                WriteOutput(conn,",");
+            WriteOutput(conn," %s", humanComp->name);
             found = 1;
         }
     }
     if (found == 0) {
-        WriteOutput("nobody");
+        WriteOutput(conn,"nobody");
     } else{}
     //WriteOutput("");
-    WriteOutput(".\n");
-    Send();
+    WriteOutput(conn,".\n");
+    Send(conn);
+}
+void DealDamage(Entity defender,int damage){
+    MeatBag* meat = GetComponent(meatID,defender);
+    if(meat != NULL){
+        meat->health -= damage;
+    }else{
+        printf("defender doesn't have a MeatBag component!\n");
+        return;
+    }
 }
 void SpawnGoblin(){
     //spawn a goblin
-    Sendf("a wild goblin appears!");
+    TellEveryone("A wild goblin appears!");
     Entity goblin = CreateEntity();
     AddComponent(goblin, humanID);
     ((Humanoid *) GetComponent(humanID, goblin))->name = "the goblin";
@@ -47,17 +69,17 @@ void Attack(Entity attacker,int hand,Entity defender){
                 //there is an item in hand! Wack time
                 //MeatBag* defenderMeat = GetComponent(meatID,defender);
                 DealDamage(defender,wackItem->damage);
-                Sendf("%s delt %d to %s and now %s has %d health!\n",attackHuman->name,wackItem->damage,
+                TellEveryone("%s delt %d to %s and now %s has %d health!\n",attackHuman->name,wackItem->damage,
                       defenderHuman->name,defenderHuman->name,defenderMeat->health);
             }else{
                 //printf("Item doesn't have the Item component!\n");
                 //this guy is punching the other guy
                 DealDamage(defender,5);
-                Sendf("%s punched %s for %d and now %s has %d health!\n",attackHuman->name,
+                TellEveryone("%s punched %s for %d and now %s has %d health!\n",attackHuman->name,
                       defenderHuman->name,5,defenderHuman->name,defenderMeat->health);
             }
             if(defenderMeat->health <= 0){
-                Sendf("Knockout!\n");
+                TellEveryone("Knockout!\n");
                 DestroyEntity(defender);
             }
         }else{

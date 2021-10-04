@@ -2,6 +2,8 @@
 #include "GameActions.h"
 
 /*
+ * TODO: Deconstruct Components (for Connections)
+ * TODO: conns Connections list to ECS
  * TODO: more game managing stuff (reset, etc.)
  * TODO: multiplayer
  * TODO: Unity instruction compressing (look -> 0x5, reset -> 0x6)
@@ -26,15 +28,6 @@ void ItemInit(void* rawItem){
 }
 void AIInit(void* rawAI){
     ((AI*)rawAI)->friendly = 0;
-}
-void DealDamage(Entity defender,int damage){
-    MeatBag* meat = GetComponent(meatID,defender);
-    if(meat != NULL){
-        meat->health -= damage;
-    }else{
-        printf("defender doesn't have a MeatBag component!\n");
-        return;
-    }
 }
 
 
@@ -97,10 +90,6 @@ void DoAction(char* line){
                    "bitch\n\t*spawn\t--spawn a goblin (for testing stuff)\n\t*help\t--you are "
                    "here\n\t*quit\t--imagine quiting, I can't");
             return;
-        }else if(strcmp(action,"quit") == 0){
-            Sendf("You are a coward. Big yikes my dude.");
-            quitting = 1;
-            return;
         }
     }
     CallSystem(AIUpdate,humanID,aiID);
@@ -112,10 +101,11 @@ int main(int argc,char** argv){
 
     ECSStartup();
 
-    humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit);
-    meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit);
-    itemID = RegisterComponent(sizeof(Item),ItemInit);
-    aiID = RegisterComponent(sizeof(AI),AIInit);
+    humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,NULL);
+    meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit,NULL);
+    itemID = RegisterComponent(sizeof(Item),ItemInit,NULL);
+    aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
+    connID = RegisterComponent(sizeof(Connection),ConnectionInit,DestroyConnection);
 
     if(ServerInit()){
         return 1;
