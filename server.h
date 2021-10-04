@@ -4,13 +4,18 @@
 #include <stdlib.h>
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
+#include <ecs.h>
+#include <list.h>
 
 nng_stream_listener* listener;
-nng_stream* out;
-nng_stream* in;//copy of out
-nng_aio* output;
-nng_aio* input;
-nng_aio* listenIO;
+nng_aio* listenIO;//listen  for incoming connections
+
+typedef struct{
+    nng_aio* input;
+    nng_aio* output;
+    nng_stream* stream;
+}Connection;
+extern List conns;//list of Connections
 
 nng_mtx* mut;
 char* receiveData;

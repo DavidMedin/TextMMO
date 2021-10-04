@@ -1,3 +1,4 @@
+#pragma once
 #include "packedSet.h"
 #define ID(eID) (short)eID
 #define VERSION(eID) ((short*)&eID)[1]

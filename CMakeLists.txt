@@ -28,7 +28,7 @@ set(SOURCE_FILES
         source.c
         pool.c
         pool.h ecs.c ecs.h
-        termInput.h vec.c vec.h server.c server.h)
+        termInput.h vec.c vec.h server.c server.h GameActions.c GameActions.h source.h)
 add_executable(Textlicious ${SOURCE_FILES})
 target_link_libraries(Textlicious nng)
 target_include_directories(Textlicious PRIVATE ${nng_SOURCE_DIRS}/include)

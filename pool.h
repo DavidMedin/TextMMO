@@ -1,3 +1,4 @@
+#pragma once
 #include "list.h"
 #include <math.h>
 #include <memory.h>

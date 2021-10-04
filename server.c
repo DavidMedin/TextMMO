@@ -1,5 +1,6 @@
 #include "server.h"
 extern void DoAction(char* line);
+List conns = {0};
 void Fatal(char* func,int error){
     printf("%s error: %s\n",func,nng_strerror(error));
 
@@ -13,9 +14,8 @@ void Listen(void* nothing){
         return;
     }
     printf("Found a connection\n");
-    out = nng_aio_get_output(listenIO,0);
-    in = out;
-    if(out == NULL){
+    stream = nng_aio_get_output(listenIO,0);
+    if(stream == NULL){
         printf("couldn't get output\n");
         return;
     }
@@ -62,6 +62,9 @@ void ReceiveCallBack(void* nothing){
     nng_mtx_unlock(mut);
     if(strcmp(receive,"quit")!=0){
         ReceiveListen();//not quitting
+    }else{
+        //quiting
+
     }
 }
 
@@ -87,33 +90,35 @@ int ServerInit(){
         Fatal("listenIO nng_aio_alloc",rv);
         return 1;
     }
-    if((rv=nng_aio_alloc(&output,SendCallback,NULL))!=0){
-        Fatal("output nng_aio_alloc",rv);
-        return 1;
-    }
-    if((rv=nng_aio_alloc(&input,ReceiveCallBack,NULL))!=0){
-        Fatal("input nng_aio_alloc",rv);
-        return 1;
-    }
+    //if((rv=nng_aio_alloc(&output,SendCallback,NULL))!=0){
+    //    Fatal("output nng_aio_alloc",rv);
+    //    return 1;
+    //}
+    //if((rv=nng_aio_alloc(&input,ReceiveCallBack,NULL))!=0){
+    //    Fatal("input nng_aio_alloc",rv);
+    //    return 1;
+    //}
+    ;
     nng_stream_listener_accept(listener,listenIO);
     return 0;
 }
 void ServerEnd(){
     printf("freeing\n");
+    nng_stream_listener_close(listener);
     nng_stream_listener_free(listener);
     nng_aio_wait(input);
     nng_aio_free(input);
     nng_aio_free(output);
     nng_aio_free(listenIO);
-    nng_stream_close(out);
-    nng_stream_free(out);
+    nng_stream_close(stream);
+    nng_stream_free(stream);
     nng_mtx_free(mut);
 }
 
 int Send(){
     sendBuffEnd = 0;
     nng_aio_wait(output);
-    nng_stream_send(out,output);
+    nng_stream_send(stream,output);
 }
 int Sendf(const char* format,...){
     va_list args;
@@ -128,6 +133,6 @@ void WriteOutput(const char* format,...){
     sendBuffEnd += vsprintf(sendBuff+sendBuffEnd,format,args);
 }
 int ReceiveListen(){
-    nng_stream_recv(in,input);
+    nng_stream_recv(stream,input);
     return 0;
 }
