@@ -71,22 +71,22 @@ void AIUpdate(Entity entity){
     FreeList(&attackList);
 }
 
-Entity human;
 int quitting = 0;
-void DoAction(char* line){
+void DoAction(Entity ent,char* line){
     List tokens = Listify(line);
     if(tokens.count != 0) {
         char *action = tokens.start->data;
         if (strcmp(action, "attack") == 0) {
-            AttackString(human, tokens);
+            AttackString(ent, tokens);
         } else if (strcmp(action, "look") == 0) {
-            Look(human);
+            Look(ent);
             return;
         } else if (strcmp(action, "spawn") == 0) {
             SpawnGoblin();
         }else if(strcmp(action, "help") == 0){
             //print some helpful stuff
-            Sendf("Commands----------\n\t*look\t--look around\n\t*attack {enemy name}\t--attack that "
+            Sendf(GetComponent(connID,ent),"Commands----------\n\t*look\t--look around\n\t*attack {enemy "
+                                          "name}\t--attack that "
                    "bitch\n\t*spawn\t--spawn a goblin (for testing stuff)\n\t*help\t--you are "
                    "here\n\t*quit\t--imagine quiting, I can't");
             return;
@@ -94,12 +94,23 @@ void DoAction(char* line){
     }
     CallSystem(AIUpdate,humanID,aiID);
 }
-char* receive;
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
 
     ECSStartup();
+
+    //list testing
+    List list = {0};//contains strings
+    PushBack(&list,"Hello",5);
+    PushBack(&list,"Dude",5);
+    PushBack(&list,"Guy",5);
+    PushBack(&list,"This is a longer string",5);
+    For_Each(list,listIter){
+        char* str = Iter_Val(listIter,char);
+        printf("%s\n",str);
+    }
+
 
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,NULL);
     meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit,NULL);
@@ -107,6 +118,9 @@ int main(int argc,char** argv){
     aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
     connID = RegisterComponent(sizeof(Connection),ConnectionInit,DestroyConnection);
 
+    if(StartAllocator()){
+        return 1;
+    }
     if(ServerInit()){
         return 1;
     }
@@ -130,18 +144,27 @@ int main(int argc,char** argv){
     orcHuman->hands[1] = orcishSword;
     //((Humanoid*) GetComponent(humanID,orc))->name = "the orc";
 
-    human = CreateEntity();
-    character = human;
-    AddComponent(human,humanID);AddComponent(human,meatID);
-    Humanoid* humanHuman = GetComponent(humanID,human);
-    humanHuman->name = "Jimmy";
-    humanHuman->hands[0] = sword;
+    //human = CreateEntity();
+    //character = human;
+    //AddComponent(human,humanID);AddComponent(human,meatID);
+    //Humanoid* humanHuman = GetComponent(humanID,human);
+    //humanHuman->name = "Jimmy";
+    //humanHuman->hands[0] = sword;
 
     while(quitting != 1){
         nng_mtx_lock(mut);
-        if(receive != NULL){
-            DoAction(receive);
-            receive = NULL;
+        //go through connections and read their actions
+        For_System(connID,connIter){
+            Connection* conn = connIter.ptr;
+            if(conn->actions.count > 0){
+                //do actions
+                For_Each(conn->actions,actionIter){
+                    char* msg = Iter_Val(actionIter,char);
+                    DoAction(connIter.ent,msg);
+                    FreeMemory(msg);
+                    RemoveElementNF(&actionIter);
+                }
+            }
         }
         nng_mtx_unlock(mut);
     }

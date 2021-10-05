@@ -2,7 +2,7 @@
 #include "source.h"
 extern void DoAction(char* line);
 //List conns = {0}; replaced by ecs
-void Fatal(char* func,int error){
+void Fatal(const char* func,int error){
     printf("%s error: %s\n",func,nng_strerror(error));
 
 }
@@ -40,9 +40,10 @@ void Listen(void* nothing){
 void SendCallback(void* voidConn){
     printf("Sent Item\n");
 }
-extern char* receive;
 void ReceiveCallBack(void* voidConn){
     Connection* conn = voidConn;
+    //free what needs to be freed
+
     int rv;
     if((rv=nng_aio_result(conn->input))!=0){
         if(rv == 7){//7 is object closed, probably freeing everything
@@ -53,12 +54,16 @@ void ReceiveCallBack(void* voidConn){
         nng_stream_listener_accept(listener,listenIO);
         return;
     }
-    conn->receiveBuff[nng_aio_count(conn->input)] = 0;
+    int read = nng_aio_count(conn->input);
+    conn->receiveBuff[read] = 0;
     printf("received data -> '%s'\n",conn->receiveBuff);
-    if(strcmp(receive,"quit")!=0){
+    if(strcmp(conn->receiveBuff,"quit")!=0){
         //not quitting
         nng_mtx_lock(mut);
-        receive = conn->receiveBuff;
+        //push to the front of its list
+        char* newStr = RequestMemory(read);
+        memcpy(newStr,conn->receiveBuff,read+1);//include the \0
+        AddNode(&conn->actions,0,newStr,read);//doesn't include \0
         nng_mtx_unlock(mut);
         ReceiveListen(conn);
     }else{
@@ -66,9 +71,15 @@ void ReceiveCallBack(void* voidConn){
         Sendf(conn,"Imagine quitting, I can't");
         nng_aio_wait(conn->output);
         //free Connection
-        Iter iter = List_FindPointer(&conns,conn);
-        RemoveElementNF(&iter);
-        FreeConnection(conn);
+
+        //kill entity that holds the component
+        Entity ent = *(Entity*)((char*)conn - sizeof(Entity));//super unsafe
+        DestroyEntity(ent);//should implicitly destroy the Connection
+        //also kills the entity
+
+        //Iter iter = List_FindPointer(&conns,conn);
+        //RemoveElementNF(&iter);
+        //FreeConnection(conn);
     }
 }
 
@@ -113,8 +124,9 @@ void ServerEnd(){
     nng_stream_listener_free(listener);
     nng_aio_free(listenIO);
     nng_mtx_free(mut);
-    For_Each(conns,connIter) {
-        Connection* conn = Iter_Val(connIter,Connection);
+    //For_Each(conns,connIter) {
+    For_System(connID,conIter){
+        Connection* conn = conIter.ptr;
         FreeConnection(conn);
     }
 
@@ -172,4 +184,7 @@ void ConnectionInit(void* emptyConn){
         Fatal("input nng_aio_set_iov",rv);
         return;
     }
+    conn->actions.count=0;
+    conn->actions.start=NULL;
+    conn->actions.end=NULL;
 }

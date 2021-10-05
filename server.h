@@ -1,11 +1,14 @@
+#pragma once
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
+
 #include <ecs.h>
 #include <list.h>
+#include "memManager.h"
 
 nng_stream_listener* listener;
 nng_aio* listenIO;//listen  for incoming connections
@@ -17,6 +20,7 @@ typedef struct{
     char* receiveBuff;
     char* sendBuff;
     unsigned int sendBuffEnd;//index to the end
+    List actions;//list of Messages (v) to process on main thread. NEW MEMORY
 }Connection;
 void ConnectionInit(void* emptyConn);
 void FreeConnection(Connection* conn);

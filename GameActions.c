@@ -1,11 +1,10 @@
 #include "GameActions.h"
 #include "source.h"
-extern List conns;
 void TellEveryone(const char* format,...){
     va_list args;
     va_start(args,format);
-    For_Each(conns,connIter){
-        Sendfa(Iter_Val(connIter,Connection),format,args);
+    For_System(connID,connIter){
+        Sendfa(connIter.ptr,format,args);
     }
 }
 void Look(Entity looker){

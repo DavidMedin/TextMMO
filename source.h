@@ -8,6 +8,7 @@
 #include "vec.h"
 #include "termInput.h"
 #include <server.h>
+#include "memManager.h"
 Entity character;
 int meatID,humanID,itemID,aiID,connID;
 typedef struct{

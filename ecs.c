@@ -201,11 +201,15 @@ SysIter ForSysCreateIter(int compID){
     For_Each(components,compIter){
         if(compIter.i == compID){
             //this is our component
-            newIter.arrayIter = MakeIter(&Iter_Val(compIter,Component)->data.packed.list);
+            List* list = &Iter_Val(compIter,Component)->data.packed.list;
+            newIter.arrayIter = MakeIter(list);
             Inc(&newIter.arrayIter);//big dumb
+            newIter.comp = Iter_Val(compIter,Component);
+            if(list->count == 0){
+                return newIter;
+            }
             newIter.ptr = (int*)newIter.arrayIter.this->data+1;
             newIter.ent = *((int*)newIter.ptr-1);
-            newIter.comp = Iter_Val(compIter,Component);
         }
     }
     return newIter;

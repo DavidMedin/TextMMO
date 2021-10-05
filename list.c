@@ -56,7 +56,7 @@ void NewIter(List* list,Iter* iter)
 }
 
 Iter List_FindPointer(List* list,void* ptr){
-    For_Each(list,listIter){
+    For_Each(*list,listIter){
         if(listIter.this->data == ptr){
             return listIter;
         }
@@ -97,6 +97,7 @@ void RemoveElementNF(Iter* iter){
 	_RemoveElement(iter,0);
 }
 int Inc(Iter* iter){
+    iter->last=iter->this;
 	iter->this=iter->next;
 	if(iter->next) iter->next=iter->next->next;
 	if(iter->last) iter->last=iter->last->next;
