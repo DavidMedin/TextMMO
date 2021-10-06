@@ -39,6 +39,7 @@ void Listen(void* nothing){
     Sendf(conn,"Welcome!");
     Sendf(conn,"type 'help' for help, I guess.\n");
     ReceiveListen(conn);
+    nng_stream_listener_accept(listener,listenIO);
 }
 void SendCallback(void* voidConn){
     printf("Sent Item\n");
@@ -60,32 +61,33 @@ void ReceiveCallBack(void* voidConn){
     int read = nng_aio_count(conn->input);
     conn->receiveBuff[read] = 0;
     printf("received data -> '%s'\n",conn->receiveBuff);
-    if(strcmp(conn->receiveBuff,"quit")!=0){
-        //not quitting
-        nng_mtx_lock(mut);
-        //push to the front of its list
-        char* newStr = malloc(read+1);
-        memcpy(newStr,conn->receiveBuff,read+1);//include the \0
-        printf("%s\n",newStr);
-        AddNode(&conn->actions,0,newStr,read);//doesn't include \0
-        nng_mtx_unlock(mut);
-        ReceiveListen(conn);
-    }else{
+    if(strcmp(conn->receiveBuff,"quit")==0) {
         //quiting
-        Sendf(conn,"Imagine quitting, I can't");
+        Sendf(conn, "Imagine quitting, I can't");
+    }
+    //not quitting
+    nng_mtx_lock(mut);
+    //push to the front of its list
+    char* newStr = malloc(read+1);
+    memcpy(newStr,conn->receiveBuff,read+1);//include the \0
+    printf("%s\n",newStr);
+    AddNode(&conn->actions,0,newStr,read);//doesn't include \0
+    nng_mtx_unlock(mut);
+    ReceiveListen(conn);
+        //IFFED
+
         //nng_aio_wait(conn->output);
         //free Connection
 
         //kill entity that holds the component
-        Entity ent = *(Entity*)((char*)conn - sizeof(Entity));//super unsafe
-        DeferDestruction(ent);
+        //Entity ent = *(Entity*)((char*)conn - sizeof(Entity));//super unsafe
+        //DeferDestruction(ent);
         //DestroyEntity(ent);//should implicitly destroy the Connection
         //also kills the entity
 
         //Iter iter = List_FindPointer(&conns,conn);
         //RemoveElementNF(&iter);
         //FreeConnection(conn);
-    }
 }
 
 nng_mtx* deferedMut;
@@ -99,7 +101,7 @@ int ServerInit(){
         Fatal("nng_mtx_alloc",rv);
         return 1;
     }
-    if((rv= nng_stream_listener_alloc(&listener,"tcp://127.0.0.1:8080"))!=0){
+    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.204.12:8080"))!=0){
         Fatal("nng_stream_listener_alloc",rv);
         return 1;
     }
@@ -119,11 +121,13 @@ int ServerInit(){
 }
 void FreeConnection(Connection* conn){
     printf("destroying connection\n");
-    nng_stream_close(conn->stream);
-    nng_stream_free(conn->stream);
-    //nng_aio_wait(conn->input);
+    //nng_aio_stop(conn->input);
+    //nng_aio_stop(conn->output);
     nng_aio_free(conn->input);
     nng_aio_free(conn->output);
+    nng_stream_free(conn->stream);
+    free(conn->receiveBuff);
+    free(conn->sendBuff);
 }
 void DestroyConnection(void* conn){
     FreeConnection(conn);

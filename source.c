@@ -128,19 +128,31 @@ int main(int argc,char** argv){
     orcHuman->hands[1] = orcishSword;
 
     while(quitting != 1){
-        DestroyWaiting();
+        //DestroyWaiting();
         nng_mtx_lock(mut);
         //go through connections and read their actions
+        List defer = {0};
         For_System(connID,connIter){
             Connection* conn = connIter.ptr;
             if(conn->actions.count > 0){
                 //do actions
                 For_Each(conn->actions,actionIter){
                     char* msg = Iter_Val(actionIter,char);
-                    DoAction(connIter.ent,msg);
+                    if(strcmp(msg,"quit")==0){
+                        Entity* basket = malloc(sizeof(Entity));
+                        *basket = connIter.ent;
+                        PushBack(&defer,basket,1);
+                        //DestroyEntity(connIter.ent);
+                        break;
+                    }else
+                        DoAction(connIter.ent,msg);
                     RemoveElement(&actionIter);
                 }
             }
+        }
+        For_Each(defer,deferIter){
+            DestroyEntity(*Iter_Val(deferIter,Entity));
+            RemoveElement(&deferIter);
         }
         nng_mtx_unlock(mut);
     }

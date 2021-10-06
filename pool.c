@@ -8,7 +8,7 @@ void *PL_GetItem(Pool pool,unsigned short eID) {//eID starts at 1
         return NULL;
     }
     if(eID > pool.list.count * POOL_SIZE){
-        printf("Error getting unallocated eID\n");
+        printf("Error getting unallocated eID (%d)\n",eID);
         return NULL;
     }
     //eID / POOL_SIZE -> how many pools can you fit in it?

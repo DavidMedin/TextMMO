@@ -83,7 +83,7 @@ void DestroyEntity(int entityID){
 
             //deconstruct
             if(comp->destroyFunc != NULL){
-                comp->destroyFunc(((char*)packedSlot)+sizeof(short));//packed(+short) is where the data lives
+                comp->destroyFunc(((char*)packedSlot)+sizeof(int));//packed(+short) is where the data lives
             }
 
             memcpy(packedSlot,lastSlot,comp->data.packed.itemSize);
