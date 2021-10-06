@@ -106,9 +106,6 @@ int main(int argc,char** argv){
     aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
     connID = RegisterComponent(sizeof(Connection),ConnectionInit,DestroyConnection);
 
-    if(StartAllocator()){
-        return 1;
-    }
     if(ServerInit()){
         return 1;
     }
@@ -131,6 +128,7 @@ int main(int argc,char** argv){
     orcHuman->hands[1] = orcishSword;
 
     while(quitting != 1){
+        DestroyWaiting();
         nng_mtx_lock(mut);
         //go through connections and read their actions
         For_System(connID,connIter){
@@ -138,11 +136,9 @@ int main(int argc,char** argv){
             if(conn->actions.count > 0){
                 //do actions
                 For_Each(conn->actions,actionIter){
-                    volatile char* msg = Iter_Val(actionIter,volatile char);
+                    char* msg = Iter_Val(actionIter,char);
                     DoAction(connIter.ent,msg);
-                    //FreeMemory(msg);
-                    free(msg);
-                    RemoveElementNF(&actionIter);
+                    RemoveElement(&actionIter);
                 }
             }
         }

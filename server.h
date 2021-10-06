@@ -8,7 +8,6 @@
 
 #include <ecs.h>
 #include <list.h>
-#include "memManager.h"
 
 nng_stream_listener* listener;
 nng_aio* listenIO;//listen  for incoming connections
@@ -37,3 +36,8 @@ int Sendfa(Connection* conn,const char* format,va_list args);//writes to output,
 int Send(Connection* conn);//sends
 void WriteOutput(Connection* conn,const char* format,...);//only writes to output
 int ReceiveListen(Connection* conn);
+
+//thread functions
+void DeferDestruction(Entity ent);//wait for thread(found in Connection component) to finish, then destroies entity
+// via DestroyWainting
+void DestroyWaiting();//destroys entites waiting to be destroyed

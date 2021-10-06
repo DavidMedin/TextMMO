@@ -251,3 +251,4 @@ int HasComponent(Entity ent, int compID) {
     printf("Tried to call HasComponent with a component (%d) that doesn't exist!\n",compID);
     return 0;
 }
+

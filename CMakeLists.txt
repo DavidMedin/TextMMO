@@ -36,8 +36,7 @@ set(SOURCE_FILES
         GameActions.c
         GameActions.h
         source.h
-        memManager.c
-        memManager.h)
+        )
 add_executable(Textlicious ${SOURCE_FILES})
 target_link_libraries(Textlicious nng)
 target_include_directories(Textlicious PRIVATE ${nng_SOURCE_DIRS}/include)

@@ -64,9 +64,7 @@ void ReceiveCallBack(void* voidConn){
         //not quitting
         nng_mtx_lock(mut);
         //push to the front of its list
-        //char* newStr = RequestMemory(read);
         char* newStr = malloc(read+1);
-        printf("%d\n",read);
         memcpy(newStr,conn->receiveBuff,read+1);//include the \0
         printf("%s\n",newStr);
         AddNode(&conn->actions,0,newStr,read);//doesn't include \0
@@ -75,12 +73,13 @@ void ReceiveCallBack(void* voidConn){
     }else{
         //quiting
         Sendf(conn,"Imagine quitting, I can't");
-        nng_aio_wait(conn->output);
+        //nng_aio_wait(conn->output);
         //free Connection
 
         //kill entity that holds the component
         Entity ent = *(Entity*)((char*)conn - sizeof(Entity));//super unsafe
-        DestroyEntity(ent);//should implicitly destroy the Connection
+        DeferDestruction(ent);
+        //DestroyEntity(ent);//should implicitly destroy the Connection
         //also kills the entity
 
         //Iter iter = List_FindPointer(&conns,conn);
@@ -89,9 +88,14 @@ void ReceiveCallBack(void* voidConn){
     }
 }
 
+nng_mtx* deferedMut;
 int ServerInit(){
     int rv;
     if((rv = nng_mtx_alloc(&mut))!=0){
+        Fatal("nng_mtx_alloc",rv);
+        return 1;
+    }
+    if((rv=nng_mtx_alloc(&deferedMut))!=0){
         Fatal("nng_mtx_alloc",rv);
         return 1;
     }
@@ -115,11 +119,11 @@ int ServerInit(){
 }
 void FreeConnection(Connection* conn){
     printf("destroying connection\n");
-    nng_aio_wait(conn->input);
-    nng_aio_free(conn->input);
-    nng_aio_free(conn->output);
     nng_stream_close(conn->stream);
     nng_stream_free(conn->stream);
+    //nng_aio_wait(conn->input);
+    nng_aio_free(conn->input);
+    nng_aio_free(conn->output);
 }
 void DestroyConnection(void* conn){
     FreeConnection(conn);
@@ -164,6 +168,12 @@ int ReceiveListen(Connection* conn){
     nng_stream_recv(conn->stream,conn->input);
     return 0;
 }
+//void connectionCancel(nng_aio* aio,void* arg,int err){
+//    if(err == NNG_ECANCELED){
+//        printf("canceled\n");
+//    }
+//    nng_aio_finish(aio,err);
+//}
 void ConnectionInit(void* emptyConn){
     Connection* conn = emptyConn;
     int rv;
@@ -171,6 +181,7 @@ void ConnectionInit(void* emptyConn){
         Fatal("output nng_aio_alloc",rv);
         return;
     }
+    //nng_aio_defer(conn->output,connectionCancel,NULL);
     if((rv=nng_aio_alloc(&conn->input,ReceiveCallBack,conn))!=0){
         Fatal("input nng_aio_alloc",rv);
         return;
@@ -193,4 +204,22 @@ void ConnectionInit(void* emptyConn){
     conn->actions.count=0;
     conn->actions.start=NULL;
     conn->actions.end=NULL;
+}
+
+List deferedEntities = {0};
+void DeferDestruction(Entity ent){
+    Entity* data = malloc(sizeof(Entity));
+    *data = ent;
+    nng_mtx_lock(deferedMut);
+    PushBack(&deferedEntities,data,sizeof(Entity));
+    nng_mtx_unlock(deferedMut);
+    //nng_aio_cancel(GetComponent(connID,ent));//maybe
+}
+void DestroyWaiting(){
+    nng_mtx_lock(deferedMut);
+    For_Each(deferedEntities,deferedIter){
+        DestroyEntity(*Iter_Val(deferedIter,Entity));
+        RemoveElement(&deferedIter);
+    }
+    nng_mtx_unlock(deferedMut);
 }
