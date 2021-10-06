@@ -3,8 +3,12 @@
 #include <stdlib.h>
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
-nng_mtx* mtx;
-nng_cv* condiVar;
+nng_mtx* startRMMut;// start resource manager mutex
+nng_mtx* endRMMut;
+nng_mtx* totalRMMut;
+
+nng_cv* startRMVar;
+
 nng_thread* memThread;
 int StartAllocator();
 void KillAllocator();

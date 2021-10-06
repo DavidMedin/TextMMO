@@ -13,7 +13,7 @@ typedef struct Link_t{
 	struct Link_t* next;
 	struct Link_t* last;
 	void* data;
-	size_t dataSize; 
+	size_t dataSize;
 }*Link;
 typedef struct{
 	Link next;

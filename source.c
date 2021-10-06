@@ -100,18 +100,6 @@ int main(int argc,char** argv){
 
     ECSStartup();
 
-    //list testing
-    List list = {0};//contains strings
-    PushBack(&list,"Hello",5);
-    PushBack(&list,"Dude",5);
-    PushBack(&list,"Guy",5);
-    PushBack(&list,"This is a longer string",5);
-    For_Each(list,listIter){
-        char* str = Iter_Val(listIter,char);
-        printf("%s\n",str);
-    }
-
-
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,NULL);
     meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit,NULL);
     itemID = RegisterComponent(sizeof(Item),ItemInit,NULL);
@@ -125,7 +113,6 @@ int main(int argc,char** argv){
         return 1;
     }
     printf("started\n");
-    //SendStuff();
 
     Entity sword = CreateEntity();
     AddComponent(sword,itemID);
@@ -142,14 +129,6 @@ int main(int argc,char** argv){
     Humanoid* orcHuman = GetComponent(humanID,orc);
     orcHuman->name = "the orc";
     orcHuman->hands[1] = orcishSword;
-    //((Humanoid*) GetComponent(humanID,orc))->name = "the orc";
-
-    //human = CreateEntity();
-    //character = human;
-    //AddComponent(human,humanID);AddComponent(human,meatID);
-    //Humanoid* humanHuman = GetComponent(humanID,human);
-    //humanHuman->name = "Jimmy";
-    //humanHuman->hands[0] = sword;
 
     while(quitting != 1){
         nng_mtx_lock(mut);
@@ -159,9 +138,10 @@ int main(int argc,char** argv){
             if(conn->actions.count > 0){
                 //do actions
                 For_Each(conn->actions,actionIter){
-                    char* msg = Iter_Val(actionIter,char);
+                    volatile char* msg = Iter_Val(actionIter,volatile char);
                     DoAction(connIter.ent,msg);
-                    FreeMemory(msg);
+                    //FreeMemory(msg);
+                    free(msg);
                     RemoveElementNF(&actionIter);
                 }
             }

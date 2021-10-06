@@ -6,29 +6,36 @@ union {
 }arg;
 int argType = 0;//type is 0->free or 1->allocate or 2->exit (2 to shut clion up)
 void AllocatorWorker(void* nothing){
-    int rv;
-    if((rv=nng_cv_alloc(&condiVar,mtx))!=0){
-        Fatal("nng_cv_alloc",rv);
-        return;
-    }
     while(1){
         printf("waiting for control\n");
-        nng_mtx_lock(mtx);
-        nng_cv_wait(condiVar);
+        nng_mtx_lock(startRMMut);
+        nng_cv_wait(startRMVar);
         if(argType == 0){
             free(arg.mem);
         }else if(argType == 1){
             arg.mem = malloc(arg.size);
+            printf("allocated memory\n");
         }else if(argType == 2){
             return;
         }else
             printf("%d is not a vaild arg type for the worker thread\n",argType);
+        nng_mtx_lock(endRMMut);
+        nng_mtx_unlock(endRMMut);
+        nng_mtx_unlock(startRMMut);
     }
 }
 int StartAllocator(){
     int rv;
-    if((rv=nng_mtx_alloc(&mtx))!=0){
-        Fatal("Allocator nng_alloc_mtx",rv);
+    nng_mtx** muts[3] = {&totalRMMut,&startRMMut,&endRMMut};
+    for(int i = 0;i < 3;i++){
+        if((rv=nng_mtx_alloc(muts[i]))!=0){
+            printf("%d: ",i);
+            Fatal("Allocator nng_alloc_mtx",rv);
+            return 1;
+        }
+    }
+    if((rv=nng_cv_alloc(&startRMVar,startRMMut))!=0){
+        Fatal("nng_cv_alloc",rv);
         return 1;
     }
     if((rv=nng_thread_create(&memThread,AllocatorWorker,NULL))!=0){
@@ -39,23 +46,34 @@ int StartAllocator(){
 }
 void KillAllocator(){
     nng_thread_destroy(memThread);
-    nng_mtx_free(mtx);
-    nng_cv_free(condiVar);
+    nng_mtx* muts[3] = {totalRMMut,startRMMut,endRMMut};
+    for(int i = 0;i < 3;i++){
+        nng_mtx_free(muts[i]);
+    }
+    nng_cv_free(startRMVar);
 }
 void* RequestMemory(unsigned int size){
-    nng_mtx_lock(mtx);
+    //nng_mtx_lock(mtx);
+    nng_mtx_lock(totalRMMut);
     argType = 1;
     arg.size = size;
-    nng_cv_wake(condiVar);//wake the thread
-    nng_mtx_unlock(mtx);//give control to thread
-    nng_mtx_lock(mtx);//wait for thread to finish
-    nng_mtx_unlock(mtx);//unlock for future use
-    return arg.mem;
+    nng_mtx_lock(startRMMut);
+    nng_cv_wake(startRMVar);//wake the thread
+    nng_mtx_lock(endRMMut);//hold something so the thread can't end till we are ready
+    nng_mtx_unlock(startRMMut);//give control to thread
+    nng_mtx_unlock(endRMMut);//unlock for future use
+    void* mem = arg.mem;
+    nng_mtx_unlock(totalRMMut);
+    return mem;
 }
 void FreeMemory(void* mem){
-    nng_mtx_lock(mtx);
+    nng_mtx_lock(totalRMMut);
     argType = 0;
     arg.mem = mem;
-    nng_cv_wake(condiVar);//wake the thread
-    nng_mtx_unlock(mtx);//give control to thread
+    nng_mtx_lock(startRMMut);
+    nng_cv_wake(startRMVar);//wake the thread
+    nng_mtx_lock(startRMMut);
+    nng_mtx_unlock(startRMMut);//give control to thread
+    nng_mtx_unlock(endRMMut);
+    nng_mtx_unlock(totalRMMut);
 }

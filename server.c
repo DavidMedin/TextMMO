@@ -18,6 +18,7 @@ void Listen(void* nothing){
         return;
     }
     printf("Found a connection\n");
+    nng_mtx_lock(mut);
     Entity newPlayer = CreateEntity();
     AddComponent(newPlayer,humanID);
     static int next = 0;
@@ -31,8 +32,10 @@ void Listen(void* nothing){
     conn->stream = nng_aio_get_output(listenIO,0);
     if(conn->stream == NULL){
         printf("couldn't get output\n");
+        nng_mtx_unlock(mut);
         return;
     }
+    nng_mtx_unlock(mut);
     Sendf(conn,"Welcome!");
     Sendf(conn,"type 'help' for help, I guess.\n");
     ReceiveListen(conn);
@@ -61,8 +64,11 @@ void ReceiveCallBack(void* voidConn){
         //not quitting
         nng_mtx_lock(mut);
         //push to the front of its list
-        char* newStr = RequestMemory(read);
+        //char* newStr = RequestMemory(read);
+        char* newStr = malloc(read+1);
+        printf("%d\n",read);
         memcpy(newStr,conn->receiveBuff,read+1);//include the \0
+        printf("%s\n",newStr);
         AddNode(&conn->actions,0,newStr,read);//doesn't include \0
         nng_mtx_unlock(mut);
         ReceiveListen(conn);
