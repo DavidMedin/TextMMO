@@ -46,24 +46,26 @@ void AIUpdate(Entity entity){
             PushBack(&attackList,tmpEnt,sizeof(Entity));
         }
     }
-    if(ai->friendly == 0){
-        Entity* tmpEnt = malloc(sizeof(Entity));
-        *tmpEnt = character;
-        PushBack(&attackList,tmpEnt,sizeof(Entity));
-    }
+    //if(ai->friendly == 0){
+    //    Entity* tmpEnt = malloc(sizeof(Entity));
+    //    *tmpEnt = character;
+    //    PushBack(&attackList,tmpEnt,sizeof(Entity));
+    //}
 
     //pick someone to attack
-    tryAgain:;
-    unsigned int attackIndex = rand() % ((unsigned int)attackList.count);
-    For_Each(attackList,attackIter){
-        if(attackIter.i == attackIndex){
-            //Attack this person
-            Entity defender = *(int*)attackIter.this->data;
-            MeatBag* meat = GetComponent(meatID,defender);
-            if(meat != NULL){
-                if(meat->health <= 0) goto tryAgain;//this is simple. Don't @ me, John
-                Attack(entity,1,defender);
-                break;
+    if(attackList.count != 0) {
+        tryAgain:;
+        unsigned int attackIndex = rand() % ((unsigned int) attackList.count);
+        For_Each(attackList, attackIter) {
+            if (attackIter.i == attackIndex) {
+                //Attack this person
+                Entity defender = *(int *) attackIter.this->data;
+                MeatBag *meat = GetComponent(meatID, defender);
+                if (meat != NULL) {
+                    if (meat->health <= 0) goto tryAgain;//this is simple. Don't @ me, John
+                    Attack(entity, 1, defender);
+                    break;
+                }
             }
         }
     }
@@ -72,28 +74,32 @@ void AIUpdate(Entity entity){
 }
 
 int quitting = 0;
-void DoAction(Entity ent,char* line){
+int DoAction(Entity ent,char* line){
     List tokens = Listify(line);
     if(tokens.count != 0) {
         char *action = tokens.start->data;
         if (strcmp(action, "attack") == 0) {
             AttackString(ent, tokens);
+            return 0;
         } else if (strcmp(action, "look") == 0) {
             Look(ent);
-            return;
+            return 0;
         } else if (strcmp(action, "spawn") == 0) {
             SpawnGoblin();
+            return 0;
         }else if(strcmp(action, "help") == 0){
             //print some helpful stuff
             Sendf(GetComponent(connID,ent),"Commands----------\n\t*look\t--look around\n\t*attack {enemy "
                                           "name}\t--attack that "
                    "bitch\n\t*spawn\t--spawn a goblin (for testing stuff)\n\t*help\t--you are "
-                   "here\n\t*quit\t--imagine quiting, I can't");
-            return;
+                   "here\n\t*quit\t--imagine quiting, I can't\n\t*join\t--join back in after quitting.");
+            return 0;
         }
     }
     CallSystem(AIUpdate,humanID,aiID);
+    return 1;
 }
+
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
@@ -105,6 +111,7 @@ int main(int argc,char** argv){
     itemID = RegisterComponent(sizeof(Item),ItemInit,NULL);
     aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
     connID = RegisterComponent(sizeof(Connection),ConnectionInit,DestroyConnection);
+
 
     if(ServerInit()){
         return 1;
@@ -138,14 +145,21 @@ int main(int argc,char** argv){
                 //do actions
                 For_Each(conn->actions,actionIter){
                     char* msg = Iter_Val(actionIter,char);
+                    char* old = malloc(strlen(msg)+1);
+                    strcpy(old,msg);
+                    old[strlen(msg)]=0;
                     if(strcmp(msg,"quit")==0){
                         Entity* basket = malloc(sizeof(Entity));
                         *basket = connIter.ent;
                         PushBack(&defer,basket,1);
                         //DestroyEntity(connIter.ent);
+                        free(old);
                         break;
                     }else
-                        DoAction(connIter.ent,msg);
+                        if(DoAction(connIter.ent,msg)){
+                            TellEveryone("%s",old);
+                        }
+                        free(old);
                     RemoveElement(&actionIter);
                 }
             }

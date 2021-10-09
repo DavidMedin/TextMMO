@@ -2,6 +2,8 @@
 #include "packedSet.h"
 #define ID(eID) (short)eID
 #define VERSION(eID) ((short*)&eID)[1]
+
+
 typedef void (*componentInitFunc)(void*);
 typedef void (*componentDestroyFunc)(void*);
 typedef void(*SystemFunc)(int);//int is the entity ID.
@@ -20,13 +22,15 @@ Pool versions;
 ForSysInc(&iter, \
 component))
 #define SysIterVal(sysIter,type) ((type*)sysIter.ptr)
-typedef struct{
+typedef struct SysIter_s SysIter;
+struct SysIter_s{
     int i;
     void* ptr;
     Entity ent;
     Iter arrayIter;
     Component* comp;
-}SysIter;
+    SysIter* activeIter;//DO NOT TOUCH (for internal use only)
+};
 SysIter ForSysCreateIter(int compID);
 int ForSysTest(SysIter iter,int componentID);
 void ForSysInc(SysIter* iter,int componentID);

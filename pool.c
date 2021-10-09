@@ -34,7 +34,7 @@ void *PL_GetItem(Pool pool,unsigned short eID) {//eID starts at 1
 }
 
 void *PL_GetLastItem(Pool pool) {
-    return PL_GetItem(pool,pool.itemCount+1);
+    return PL_GetItem(pool,pool.itemCount);
 }
 
 void _PL_NewArray(Pool* pool) {

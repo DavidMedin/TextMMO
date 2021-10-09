@@ -44,7 +44,10 @@ int CreateEntity(){
         //yup!
         //Use the first as our new entity, and move the last in the array to the beginning
         eID = *(short*)PL_GetFirstItem(deleted);
-        *(short*)PL_GetFirstItem(deleted) = *(short*)PL_GetLastItem(deleted);
+        //*(short*)PL_GetFirstItem(deleted) = *(short*)PL_GetLastItem(deleted);
+        short* first = PL_GetFirstItem(deleted);
+        short* last = PL_GetLastItem(deleted);
+        *first = *last;
         deleted.itemCount--;
         //potentially free memory in pool
     }else{
@@ -195,6 +198,7 @@ void* GetComponent(int componentID,int entityID){
     return NULL;
 }
 
+List activeIters = {0};
 SysIter ForSysCreateIter(int compID){
     SysIter newIter = {0};
     //find Component
@@ -212,12 +216,20 @@ SysIter ForSysCreateIter(int compID){
             newIter.ent = *((int*)newIter.ptr-1);
         }
     }
+    SysIter* carrige = malloc(sizeof(SysIter));
+    newIter.activeIter = carrige;
+    *carrige = newIter;
+    PushBack(&activeIters,carrige,sizeof(SysIter));
     return newIter;
 }
 int ForSysTest(SysIter iter,int componentID){
     //test if we have reached the end
     if(iter.i == iter.comp->data.packed.itemCount){//i is an index, not a count. +1
         //we have reached the end
+        if(activeIters.count != 0){
+            Iter carriage = List_FindPointer(&activeIters,iter.activeIter);
+            RemoveElement(&carriage); //will free carriage that was allocated in ForSysCreateIter
+        }
         return 0;
     }
     return 1;

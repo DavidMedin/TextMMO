@@ -101,7 +101,8 @@ int ServerInit(){
         Fatal("nng_mtx_alloc",rv);
         return 1;
     }
-    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.204.12:8080"))!=0){
+    //tcp://138.247.108.215:8080
+    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.98.67:8080"))!=0){
         Fatal("nng_stream_listener_alloc",rv);
         return 1;
     }
