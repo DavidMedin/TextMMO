@@ -24,7 +24,7 @@ component))
 #define SysIterVal(sysIter,type) ((type*)sysIter.ptr)
 typedef struct SysIter_s SysIter;
 struct SysIter_s{
-    int i;
+    int i;//the number of entities we have passed that were not deleted.
     void* ptr;
     Entity ent;
     Iter arrayIter;

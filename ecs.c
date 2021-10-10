@@ -3,7 +3,13 @@
 
 
 List components ={0};
+List activeIters = {0};
+struct SparseData{
+    char defered;//ready to be reorganized whenever
+    short index;//an index+1 (starts at 1h; 0 is null) into a packed array.
+};
 void ECSStartup(){
+    //TODO: Combine these (See https://skypjack.github.io/2019-05-06-ecs-baf-part-3/)
     versions = CreatePool(sizeof(short));
     deleted = CreatePool(sizeof(short));
 }
@@ -15,7 +21,7 @@ int RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFu
     PackedSet* set = &comp->data;
     set->itemSize = typesize+sizeof(int);
     set->itemPoolCount = POOL_SIZE;
-    set->sparse = CreatePool(sizeof(short));
+    set->sparse = CreatePool(sizeof(struct SparseData));
     set->packed = CreatePool(set->itemSize);//sudo struct for the win
     PushBack(&components,comp,sizeof(Component));
     return componentID++;
@@ -65,7 +71,24 @@ int CreateEntity(){
     ((short*)&entity)[1] = *entityVersion;
     return entity;
 }
-void DestroyEntity(int entityID){
+void RemoveComponent(int entityID,short componentID){
+    //does most of the deleteting, but DOES NOT REORGANIZE.
+    //Will also set the 'defer' flag of the entity in the sparse set.
+    //that is how we know what to reorganize.
+
+
+}
+void DestroyDeferedComponents(short componentID){
+
+}
+
+void DestroyEntity(int entityID){//Removes all components and deletes entity. Not fully, only defered
+
+}
+void DeleteDeferAll(){
+    //Destroy Defers ALL Components.
+}
+void _DestroyEntity(int entityID){//actually fully destroys an enitity
     //check all component sparse sets and find the ones it is in. exterminate
     if(!IsEntityValid(entityID)){
         printf("Tried to delete invalid entity! E:%d V:%d\n",ID(entityID), VERSION(entityID));
@@ -89,6 +112,17 @@ void DestroyEntity(int entityID){
                 comp->destroyFunc(((char*)packedSlot)+sizeof(int));//packed(+short) is where the data lives
             }
 
+            //fix iterators
+            For_Each(activeIters,iterIter){//Find the iterators that iterate over a component that eID has.
+                SysIter* sysIter = Iter_Val(iterIter,SysIter);
+                if(sysIter->comp == comp){
+                    //this SysIter contains the component in question; fix it.
+
+                    break;
+                }
+            }
+
+            //writing
             memcpy(packedSlot,lastSlot,comp->data.packed.itemSize);
             *(unsigned short*)lastSparsePointer = *sparseSlot;
             *sparseSlot = 0;//this is what we save 0 for
@@ -198,7 +232,6 @@ void* GetComponent(int componentID,int entityID){
     return NULL;
 }
 
-List activeIters = {0};
 SysIter ForSysCreateIter(int compID){
     SysIter newIter = {0};
     //find Component
@@ -243,7 +276,7 @@ void ForSysInc(SysIter* iter,int componentID){
             //return;
         }
         //update ptr
-        iter->ptr = ((int*)iter->arrayIter.this->data+1);
+        iter->ptr = ((int*)iter->arrayIter.this->data+1);//+1 moves ptr to the data.+0 would point to an Entity ID.
     }else
         iter->ptr = iter->ptr+iter->comp->data.itemSize;//inc ptr
     iter->i++;
