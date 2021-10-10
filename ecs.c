@@ -3,11 +3,6 @@
 
 
 List components ={0};
-List activeIters = {0};
-struct SparseData{
-    char defered;//ready to be reorganized whenever
-    short index;//an index+1 (starts at 1h; 0 is null) into a packed array.
-};
 void ECSStartup(){
     //TODO: Combine these (See https://skypjack.github.io/2019-05-06-ecs-baf-part-3/)
     versions = CreatePool(sizeof(short));
@@ -21,7 +16,7 @@ int RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFu
     PackedSet* set = &comp->data;
     set->itemSize = typesize+sizeof(int);
     set->itemPoolCount = POOL_SIZE;
-    set->sparse = CreatePool(sizeof(struct SparseData));
+    set->sparse = CreatePool(sizeof(short));
     set->packed = CreatePool(set->itemSize);//sudo struct for the win
     PushBack(&components,comp,sizeof(Component));
     return componentID++;
@@ -71,24 +66,7 @@ int CreateEntity(){
     ((short*)&entity)[1] = *entityVersion;
     return entity;
 }
-void RemoveComponent(int entityID,short componentID){
-    //does most of the deleteting, but DOES NOT REORGANIZE.
-    //Will also set the 'defer' flag of the entity in the sparse set.
-    //that is how we know what to reorganize.
-
-
-}
-void DestroyDeferedComponents(short componentID){
-
-}
-
-void DestroyEntity(int entityID){//Removes all components and deletes entity. Not fully, only defered
-
-}
-void DeleteDeferAll(){
-    //Destroy Defers ALL Components.
-}
-void _DestroyEntity(int entityID){//actually fully destroys an enitity
+void DestroyEntity(int entityID){//actually fully destroys an enitity
     //check all component sparse sets and find the ones it is in. exterminate
     if(!IsEntityValid(entityID)){
         printf("Tried to delete invalid entity! E:%d V:%d\n",ID(entityID), VERSION(entityID));
@@ -112,6 +90,7 @@ void _DestroyEntity(int entityID){//actually fully destroys an enitity
                 comp->destroyFunc(((char*)packedSlot)+sizeof(int));//packed(+short) is where the data lives
             }
 
+            /*
             //fix iterators
             For_Each(activeIters,iterIter){//Find the iterators that iterate over a component that eID has.
                 SysIter* sysIter = Iter_Val(iterIter,SysIter);
@@ -121,6 +100,7 @@ void _DestroyEntity(int entityID){//actually fully destroys an enitity
                     break;
                 }
             }
+             */
 
             //writing
             memcpy(packedSlot,lastSlot,comp->data.packed.itemSize);
@@ -238,48 +218,49 @@ SysIter ForSysCreateIter(int compID){
     For_Each(components,compIter){
         if(compIter.i == compID){
             //this is our component
-            List* list = &Iter_Val(compIter,Component)->data.packed.list;
-            newIter.arrayIter = MakeIter(list);
-            Inc(&newIter.arrayIter);//big dumb
-            newIter.comp = Iter_Val(compIter,Component);
+            Component* cmp = Iter_Val(compIter,Component);
+            newIter.i=cmp->data.packed.itemCount-1;
+            List* list = &cmp->data.packed.list;
+            newIter.arrayIter = MakeReverseIter(list);
+            Dec(&newIter.arrayIter);//big dumb
+            newIter.comp = cmp;
             if(list->count == 0){
                 return newIter;
             }
-            newIter.ptr = (int*)newIter.arrayIter.this->data+1;
+            unsigned int lastCount = cmp->data.packed.itemCount - ((list->count-1) *cmp->data.itemPoolCount);//the count
+            // of elements of the last array
+            newIter.ptr = ((char*)newIter.arrayIter.this->data + sizeof(int) + (lastCount-1)*cmp->data.itemSize);
+                //NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE NIGHTMARE
             newIter.ent = *((int*)newIter.ptr-1);
+            break;
         }
     }
-    SysIter* carrige = malloc(sizeof(SysIter));
-    newIter.activeIter = carrige;
-    *carrige = newIter;
-    PushBack(&activeIters,carrige,sizeof(SysIter));
     return newIter;
 }
 int ForSysTest(SysIter iter,int componentID){
     //test if we have reached the end
-    if(iter.i == iter.comp->data.packed.itemCount){//i is an index, not a count. +1
-        //we have reached the end
-        if(activeIters.count != 0){
-            Iter carriage = List_FindPointer(&activeIters,iter.activeIter);
-            RemoveElement(&carriage); //will free carriage that was allocated in ForSysCreateIter
-        }
+    if(iter.i == -1){
         return 0;
     }
     return 1;
 }
-void ForSysInc(SysIter* iter,int componentID){
+void ForSysDec(SysIter* iter,int componentID){
     //use i to find if we need to change array
-    if(((iter->i+1) % POOL_SIZE) == 0){
+    if(iter->i == 0) {iter->i--; return;}//we are done, just dec, and don't touch anything to do with pointers.
+    if(((iter->i) % POOL_SIZE) == 0){
         //might not work, but this should mean that it is time to change arrays
-        if(Inc(&iter->arrayIter) == 0){
+        if(Dec(&iter->arrayIter) == 0){
             //no more arrays, do something that will cause ForSysTest to trip
             //return;
+            printf("done with array\n");
         }
         //update ptr
-        iter->ptr = ((int*)iter->arrayIter.this->data+1);//+1 moves ptr to the data.+0 would point to an Entity ID.
+        iter->ptr = ((char*)iter->arrayIter.this->data + sizeof(int) + (iter->comp->data.itemPoolCount-1)*
+                iter->comp->data.itemSize);
+        //iter->ptr = ((int*)iter->arrayIter.this->data+1);//+1 moves ptr to the data.+0 would point to an Entity ID.
     }else
-        iter->ptr = iter->ptr+iter->comp->data.itemSize;//inc ptr
-    iter->i++;
+        iter->ptr = iter->ptr-iter->comp->data.itemSize;//dec ptr
+    iter->i--;
     iter->ent = *((int*)iter->ptr-1);//inc net
 }
 

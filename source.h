@@ -9,7 +9,7 @@
 #include "termInput.h"
 #include <server.h>
 Entity character;
-int meatID,humanID,itemID,aiID,connID;
+int deleteID,meatID,humanID,itemID,aiID,connID;
 typedef struct{
     int health;//max 100
 }MeatBag;

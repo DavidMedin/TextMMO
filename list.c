@@ -1,3 +1,4 @@
+#include <memory.h>
 #include "list.h"
 
 // 0 is before list, increments from there
@@ -72,6 +73,13 @@ Iter MakeIter(List* list){
 	tmpIter.next=list->start;
 	return tmpIter;
 }
+Iter MakeReverseIter(List* list){
+    Iter tmpIter={0};
+    tmpIter.i=(int)list->count-1;
+    tmpIter.root = list;
+    tmpIter.last = list->end;
+    return tmpIter;
+}
 void _RemoveElement(Iter* iter,int doFreeData){
 	if(iter->this==NULL){
 		printf("failed to remove NULL (haven't iterated yet?)\n");
@@ -96,11 +104,23 @@ void RemoveElement(Iter* iter){
 void RemoveElementNF(Iter* iter){
 	_RemoveElement(iter,0);
 }
+void* CreateBasket(size_t dataSize,void* data){
+    void* basket = malloc(dataSize);
+    memcpy(basket,data,dataSize);
+    return basket;
+}
+int Dec(Iter* iter) { //like Inc, but the other way, and returns 0 when it hits the beginning.
+    iter->next=iter->this;
+    iter->this=iter->last;
+    if(iter->last)iter->last=iter->last->last;
+    iter->i--;
+    return iter->this!=NULL;
+}
 int Inc(Iter* iter){
     iter->last=iter->this;
 	iter->this=iter->next;
 	if(iter->next) iter->next=iter->next->next;
-	if(iter->last) iter->last=iter->last->next;
+	//if(iter->last) iter->last=iter->last->next;
 	iter->i++;
 	return iter->this!=NULL;
 }

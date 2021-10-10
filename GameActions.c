@@ -73,13 +73,16 @@ void Attack(Entity attacker,int hand,Entity defender){
             }else{
                 //printf("Item doesn't have the Item component!\n");
                 //this guy is punching the other guy
-                DealDamage(defender,5);
+                int punchDamage = 20;
+                DealDamage(defender,punchDamage);
                 TellEveryone("%s punched %s for %d and now %s has %d health!\n",attackHuman->name,
-                      defenderHuman->name,5,defenderHuman->name,defenderMeat->health);
+                      defenderHuman->name,punchDamage,defenderHuman->name,defenderMeat->health);
             }
             if(defenderMeat->health <= 0){
                 TellEveryone("Knockout!\n");
-                DestroyEntity(defender);
+                //DestroyEntity(defender);
+                AddComponent(defender,deleteID);//You must(!) call the Delete component's delete system to actually
+                // remove it!
             }
         }else{
 

@@ -24,6 +24,7 @@ typedef struct{
 }Iter;
 
 #define For_Each(list,iter) for(Iter iter=MakeIter(&list);Inc(&iter);)
+#define For_Rev_Each(list,iter) for(Iter iter=MakeReverseIter(&list);Dec(&iter);)
 #define Iter_Val(iter,type) ((type*)(iter.this->data))
 
 Link AddNode(List* list,int index,void* data,size_t dataSize);
@@ -34,6 +35,10 @@ void RemoveElement(Iter* iter);//frees data
 void RemoveElementNF(Iter* iter);//doesn't free data
 void FreeList(List* list);
 
+void* CreateBasket(size_t dataSize,void* data);//you are free to dealloate this, RemoveElement will also do that.
+
 void NewIter(List* list,Iter* iter);
 Iter MakeIter(List* list);
+Iter MakeReverseIter(List* list);
+int Dec(Iter* iter); //like Inc, but the other way, and returns 0 when it hits the beginning.
 int Inc(Iter* iter);

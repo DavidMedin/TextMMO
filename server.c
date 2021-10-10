@@ -212,6 +212,7 @@ void ConnectionInit(void* emptyConn){
     conn->actions.end=NULL;
 }
 
+/*
 List deferedEntities = {0};
 void DeferDestruction(Entity ent){
     Entity* data = malloc(sizeof(Entity));
@@ -229,3 +230,4 @@ void DestroyWaiting(){
     }
     nng_mtx_unlock(deferedMut);
 }
+*/

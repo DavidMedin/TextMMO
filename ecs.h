@@ -19,21 +19,19 @@ Pool deleted;
 Pool versions;
 
 #define For_System(component,iter) for(SysIter iter = ForSysCreateIter(component);ForSysTest(iter,component); \
-ForSysInc(&iter, \
+ForSysDec(&iter, \
 component))
 #define SysIterVal(sysIter,type) ((type*)sysIter.ptr)
-typedef struct SysIter_s SysIter;
-struct SysIter_s{
+typedef struct{
     int i;//the number of entities we have passed that were not deleted.
     void* ptr;
     Entity ent;
     Iter arrayIter;
     Component* comp;
-    SysIter* activeIter;//DO NOT TOUCH (for internal use only)
-};
+}SysIter;
 SysIter ForSysCreateIter(int compID);
 int ForSysTest(SysIter iter,int componentID);
-void ForSysInc(SysIter* iter,int componentID);
+void ForSysDec(SysIter* iter,int componentID);
 
 void ECSStartup();
 int RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFunc destroyFunc);

@@ -29,6 +29,10 @@ void ItemInit(void* rawItem){
 void AIInit(void* rawAI){
     ((AI*)rawAI)->friendly = 0;
 }
+void DeleteInit(void* n){}
+void DeleteDefered(Entity entity){
+    DestroyEntity(entity);
+}
 
 
 
@@ -99,18 +103,57 @@ int DoAction(Entity ent,char* line){
     CallSystem(AIUpdate,humanID,aiID);
     return 1;
 }
-
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
 
     ECSStartup();
 
+    deleteID = RegisterComponent(0,DeleteInit,NULL);
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,NULL);
     meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit,NULL);
     itemID = RegisterComponent(sizeof(Item),ItemInit,NULL);
     aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
     connID = RegisterComponent(sizeof(Connection),ConnectionInit,DestroyConnection);
+
+    /*
+    List numbers={0};
+    for(int i = 0;i < 5;i++){
+        PushBack(&numbers, CreateBasket(sizeof(int),&i),sizeof(int));
+    }
+    For_Each(numbers,numIter){
+        printf("%d\n", *Iter_Val(numIter,int));
+    }
+    For_Rev_Each(numbers,numIter){
+        printf("%d\n", *Iter_Val(numIter,int));
+    }
+     */
+
+    /*
+    for(int i = 0;i < 5;i++){
+        Entity tmpItem = CreateEntity();
+        AddComponent(tmpItem,itemID);
+        Item* item = GetComponent(itemID,tmpItem);
+        item->damage = i;
+    }
+    For_System(itemID,itemIter){
+        Item* item = SysIterVal(itemIter,Item);
+        printf("%d\n",item->damage);
+    }
+    printf("Deleting...\n");
+    For_System(itemID,itemIter){
+        AddComponent(itemIter.ent,deleteID);
+    }
+    For_System(deleteID,deleteIter){
+        DestroyEntity(deleteIter.ent);
+    }
+    printf("Done!\n");
+    For_System(itemID,itemIter){
+        Item* item = SysIterVal(itemIter,Item);
+        printf("%d\n",item->damage);
+    }
+     */
+
 
 
     if(ServerInit()){
@@ -138,7 +181,6 @@ int main(int argc,char** argv){
         //DestroyWaiting();
         nng_mtx_lock(mut);
         //go through connections and read their actions
-        List defer = {0};
         For_System(connID,connIter){
             Connection* conn = connIter.ptr;
             if(conn->actions.count > 0){
@@ -149,10 +191,11 @@ int main(int argc,char** argv){
                     strcpy(old,msg);
                     old[strlen(msg)]=0;
                     if(strcmp(msg,"quit")==0){
-                        Entity* basket = malloc(sizeof(Entity));
-                        *basket = connIter.ent;
-                        PushBack(&defer,basket,1);
-                        //DestroyEntity(connIter.ent);
+                        //Entity* basket = malloc(sizeof(Entity));
+                        //*basket = connIter.ent;
+                        //PushBack(&defer,basket,1);
+                        //AddComponent(connIter.ent,deleteID);
+                        DestroyEntity(connIter.ent);
                         free(old);
                         break;
                     }else
@@ -164,9 +207,8 @@ int main(int argc,char** argv){
                 }
             }
         }
-        For_Each(defer,deferIter){
-            DestroyEntity(*Iter_Val(deferIter,Entity));
-            RemoveElement(&deferIter);
+        For_System(deleteID,deleteIter){
+            DestroyEntity(deleteIter.ent);
         }
         nng_mtx_unlock(mut);
     }
