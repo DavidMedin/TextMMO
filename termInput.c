@@ -31,10 +31,10 @@ List Listify(char* input){
     List tokens = {0};
     //tokenize
     char* context;
-    char* token = strtok_s(input," ",&context);
+    char* token = strtok_r(input," ",&context);
     while(token!=NULL){
         PushBack(&tokens,token,strlen(token));
-        token = strtok_s(NULL," ",&context);
+        token = strtok_r(NULL," ",&context);
     }
     return tokens;
 }

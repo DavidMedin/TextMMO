@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 project(Textlicious C)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
 
 include_directories(.)
 
@@ -38,5 +38,5 @@ set(SOURCE_FILES
         source.h
         )
 add_executable(Textlicious ${SOURCE_FILES})
-target_link_libraries(Textlicious nng)
+target_link_libraries(Textlicious nng m)
 target_include_directories(Textlicious PRIVATE ${nng_SOURCE_DIRS}/include)

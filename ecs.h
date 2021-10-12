@@ -8,6 +8,7 @@ typedef void (*componentInitFunc)(void*);
 typedef void (*componentDestroyFunc)(void*);
 typedef void(*SystemFunc)(int);//int is the entity ID.
 typedef int Entity;
+typedef int CompID;
 typedef struct{
     PackedSet data;
     componentInitFunc initFunc;
@@ -18,9 +19,8 @@ extern List components;
 Pool deleted;
 Pool versions;
 
-#define For_System(component,iter) for(SysIter iter = ForSysCreateIter(component);ForSysTest(iter,component); \
-ForSysDec(&iter, \
-component))
+#define For_System(component,iter) for(SysIter iter = ForSysCreateIter(component);ForSysTest(iter); \
+ForSysDec(&iter))
 #define SysIterVal(sysIter,type) ((type*)sysIter.ptr)
 typedef struct{
     int i;//the number of entities we have passed that were not deleted.
@@ -29,19 +29,20 @@ typedef struct{
     Iter arrayIter;
     Component* comp;
 }SysIter;
-SysIter ForSysCreateIter(int compID);
-int ForSysTest(SysIter iter,int componentID);
-void ForSysDec(SysIter* iter,int componentID);
+SysIter ForSysCreateIter(CompID component);
+int ForSysTest(SysIter iter);
+void ForSysDec(SysIter* iter);
 
 void ECSStartup();
-int RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFunc destroyFunc);
-int IsEntityValid(int entity);
+CompID RegisterComponent(int typesize,componentInitFunc initFunc,componentDestroyFunc destroyFunc);
+int IsEntityValid(Entity entity);
 int CreateEntity();
-void DestroyEntity(int entityID);
-void AddComponent(int entityID,int componentID);
+void DestroyEntity(Entity entity);
+void RemoveComponent(Entity entity,CompID component);
+void AddComponent(Entity entity,CompID component);
 #define CallSystem(func,...) _CallSystem(func,__VA_ARGS__,-1)//I don't like -1. Components don't have negative
 // values, which means that we *could* use unsigned numbers, that would make this bad.if we really wanted to we could
 // have an 'index space' and a 'null space' like with entity ids.
-void _CallSystem(SystemFunc func,int componentID,...);
-void* GetComponent(int componentID,int entityID);
-int HasComponent(Entity ent,int compID);
+void _CallSystem(SystemFunc func,CompID component,...);
+void* GetComponent(Entity entity, CompID component);
+int HasComponent(Entity entity,CompID component);

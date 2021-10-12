@@ -1,5 +1,5 @@
 #include "pool.h"
-
+#include <math.h>
 void *PL_GetItem(Pool pool,unsigned short eID) {//eID starts at 1
     //check to see if this is in currently allocated space
     //if it is not, throw an error
