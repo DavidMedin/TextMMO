@@ -40,10 +40,6 @@ void DeleteDefered(Entity entity){
     DestroyEntity(entity);
 }
 
-//void LookableLook(void* lookVoid){
-//    Lookable* look = lookVoid;
-//    Sendf("%s",look->name);
-//}
 
 void AIUpdate(Entity entity){
     //goes for all the AI entities
@@ -59,12 +55,6 @@ void AIUpdate(Entity entity){
             PushBack(&attackList,tmpEnt,sizeof(Entity));
         }
     }
-    //if(ai->friendly == 0){
-    //    Entity* tmpEnt = malloc(sizeof(Entity));
-    //    *tmpEnt = character;
-    //    PushBack(&attackList,tmpEnt,sizeof(Entity));
-    //}
-
     //pick someone to attack
     if(attackList.count != 0) {
         tryAgain:;
@@ -182,12 +172,11 @@ int main(int argc,char** argv){
                 //do actions
                 For_Each(conn->actions,actionIter){
                     char* msg = Iter_Val(actionIter,char);
-                    char* old = malloc(strlen(msg)+1);
+                    char* old = malloc(strlen(msg)+1);//preserve message before strtok
                     strcpy(old,msg);
                     old[strlen(msg)]=0;
                     if(strcmp(msg,"quit")==0){
                         DestroyEntity(connIter.ent);
-                        //AddComponent(connIter.ent,deleteID);
                         free(old);
                         break;
                     }else

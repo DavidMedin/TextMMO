@@ -52,14 +52,30 @@ void ReceiveCallBack(void* voidConn){
 
     int rv;
     if((rv=nng_aio_result(conn->input))!=0){
-        if(rv == 7 || rv == 20){
-            //7 is object close
-            //20 is cancelled
+        if(rv == 7 || rv == 20 || rv == 31) {
+            switch (rv) {
+                case 7:
+                    printf("Object is closed\n");
+                    break;
+                case 20:
+                    printf("Operation was cancelled\n");
+                    return;//reuturn, because the cancelation came from DestroyEntity
+                case 31:
+                    printf("Connection was closed\n");
+                    break;
+            }
+            nng_mtx_lock(mut);
+            AddComponent(*(((int *) conn) - 1), deleteID);//done worry, be happy
+            nng_mtx_unlock(mut);
             return;
         }
+        //    //7 is object close
+        //    //20 is cancelled
+        //    //31 is connection shutdown
+        //    return;
+        //}
         Fatal("Receive nng_aio_result",rv);
-        printf("%d\n",rv);
-        nng_stream_listener_accept(listener,listenIO);
+        printf("error: %d\n",rv);
         return;
     }
     int read = nng_aio_count(conn->input);
@@ -113,10 +129,11 @@ int ServerInit(){
 }
 void FreeConnection(Connection* conn){
     printf("destroying connection\n");
-    nng_aio_cancel(conn->input);
-    nng_aio_cancel(conn->output);
-    nng_aio_wait(conn->input);
-    nng_aio_wait(conn->output);
+    //nng_aio_cancel(conn->output);
+    //nng_aio_wait(conn->input);
+    //nng_aio_wait(conn->output);
+    nng_aio_stop(conn->input);
+    nng_aio_stop(conn->output);
     nng_aio_free(conn->input);
     nng_aio_free(conn->output);
     nng_stream_free(conn->stream);
