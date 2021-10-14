@@ -79,6 +79,11 @@ void ReceiveCallBack(void* voidConn){
         return;
     }
     int read = nng_aio_count(conn->input);
+    if(read == 0){
+        printf("read zero\n");
+        ReceiveListen(conn);
+        return;
+    }
     conn->receiveBuff[read] = 0;
     printf("received data -> '%s'\n",conn->receiveBuff);
     if(strcmp(conn->receiveBuff,"quit")==0) {
@@ -107,7 +112,7 @@ int ServerInit(){
         return 1;
     }
     //tcp://138.247.108.215:8080
-    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.204.13:8080"))!=0){
+    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.99.243:8080"))!=0){
         //if((rv= nng_stream_listener_alloc(&listener,"tcp://172.17.207.29:8080"))!=0){
     //if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.98.67:8080"))!=0){
         Fatal("nng_stream_listener_alloc",rv);

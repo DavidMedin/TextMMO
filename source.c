@@ -40,7 +40,18 @@ void DeleteDefered(Entity entity){
     DestroyEntity(entity);
 }
 
-
+void HumanoidDestroy(void* humanVoid){
+    Humanoid* human = humanVoid;
+    if(!human){
+        printf("Fatal humanoid destroy\n");
+        return;
+    }
+   for(int i =0;i < 2;i++){
+       Item* item = GetComponent(human->hands[i],itemID);
+       if(item)
+           item->owner = 0;
+   }
+}
 void AIUpdate(Entity entity){
     //goes for all the AI entities
     AI* ai = GetComponent(entity,aiID);
@@ -128,7 +139,7 @@ int main(int argc,char** argv){
 
     deleteID = RegisterComponent(0,DeleteInit,NULL);
     lookID = RegisterComponent(sizeof(Lookable),LookableInit,NULL);
-    humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,NULL);
+    humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,HumanoidDestroy);
     meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit,NULL);
     itemID = RegisterComponent(sizeof(Item),ItemInit,NULL);
     aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
