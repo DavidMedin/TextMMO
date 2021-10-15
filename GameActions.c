@@ -16,7 +16,8 @@ char* EnglishList(List items){
 void Look(Entity looker){
     Connection* conn = GetComponent(looker,connID);
     if(conn == NULL){
-        printf("This entity (%d) doesn't have the 'Connection' component!\n",looker);
+        log_error("This entity {E: %d - V: %d} doesn't have the 'Connection' {%d} component!",ID(looker),VERSION
+        (looker),connID);
         return;
     }
     //print all entities that isn't you
@@ -37,13 +38,15 @@ void Look(Entity looker){
         WriteOutput(conn,"nothing");
     } else{}
     Send(conn);
+    log_info("Performed 'Look'");
 }
 void DealDamage(Entity defender,int damage){
     MeatBag* meat = GetComponent(defender,meatID);
     if(meat != NULL){
         meat->health -= damage;
     }else{
-        printf("defender doesn't have a MeatBag component!\n");
+        log_error("defender {E: %d - V: %d} doesn't have a MeatBag component {%d}!",ID(defender),VERSION(defender),
+                  meatID);
         return;
     }
 }
@@ -56,11 +59,12 @@ void SpawnGoblin(){
     ((Lookable *) GetComponent( goblin,lookID))->name = "the goblin";
     AddComponent(goblin, meatID);
     AddComponent(goblin,aiID);
+    log_info("Performed 'SpawnGoblin'");
 }
 void Attack(Entity attacker,int hand,Entity defender){
     //attacker is attacking defender with their {hand} hand!
     if(hand < 0 || hand > 1){
-        printf("hand index out of range! %d \n",hand);
+        log_error("hand index out of range {%d}!",hand);
         return;
     }
     //Get Humanoid Component
@@ -76,29 +80,32 @@ void Attack(Entity attacker,int hand,Entity defender){
                 //there is an item in hand! Wack time
                 //MeatBag* defenderMeat = GetComponent(meatID,defender);
                 DealDamage(defender,wackItem->damage);
-                TellEveryone("%s delt %d to %s and now %s has %d health!\n",attackerLook->name,wackItem->damage,
+                TellEveryone("%s delt %d to %s and now %s has %d health!",attackerLook->name,wackItem->damage,
                       defenderLook->name,defenderLook->name,defenderMeat->health);
             }else{
                 //printf("Item doesn't have the Item component!\n");
                 //this guy is punching the other guy
                 int punchDamage = 5;
                 DealDamage(defender,punchDamage);
-                TellEveryone("%s punched %s for %d and now %s has %d health!\n",attackerLook->name,
+                TellEveryone("%s punched %s for %d and now %s has %d health!",attackerLook->name,
                       defenderLook->name,punchDamage,defenderLook->name,defenderMeat->health);
             }
             if(defenderMeat->health <= 0){
-                TellEveryone("Knockout!\n");
+                TellEveryone("Knockout!");
                 //DestroyEntity(defender);
                 AddComponent(defender,deleteID);//You must(!) call the Delete component's delete system to actually
                 // remove it!
             }
+            log_info("Performed 'Attack'");
         }else{
 
-            printf("defender doesn't have a meatbag component!\n");
+            log_error("defender {E: %d - V: %d} doesn't have a meatbag component {%d}!",ID(defender),VERSION
+            (defender),meatID);
             return;
         }
     }else{
-        printf("Either attacker or defender doesn't have a Humanoid component!\n");
+        log_error("Either attacker {E: %d - V: %d} or defender {E: %d - V: %d} doesn't have a Humanoid component "
+                  "{%d}!",ID(attacker),VERSION(attacker),ID(defender),VERSION(defender),humanID);
     }
 }
 void AttackString(Entity attacker,List tokens){
@@ -138,7 +145,7 @@ void AttackString(Entity attacker,List tokens){
 
 void PickUp(Entity picker,int hand,Entity pickee){
     if(hand < 0 || hand > 1){
-        printf("%d is not a valid hand\n",hand);
+        log_error("Failed to pick up item with an invalid hand {%d}",hand);
         return;
     }
     Item* item = GetComponent(pickee,itemID);
@@ -167,6 +174,8 @@ void PickUp(Entity picker,int hand,Entity pickee){
             Sendf(conn,"You picked up %s!",name);
         }
     }else{
-        printf("Either the human or the item didn't have their correct components\n");
+        log_error("Either the humanoid {E: %d - V: %d} or the item {E: %d - V: %d} doesn't have their respective "
+                  "components (humanoid {%d}, item {%d}",ID(picker),VERSION(picker),ID(pickee),VERSION(pickee),
+                  humanID,itemID);
     }
 }

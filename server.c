@@ -3,7 +3,7 @@
 extern void DoAction(char* line);
 //List conns = {0}; replaced by ecs
 void Fatal(const char* func,int error){
-    printf("%s error: %s\n",func,nng_strerror(error));
+    log_error("%s error: %s",func,nng_strerror(error));
 
 }
 char* names[] = {"Jimmy","Garret","Karina"};
@@ -17,7 +17,7 @@ void Listen(void* nothing){
         Fatal("Listen nng_aio_result", rv);
         return;
     }
-    printf("Found a connection\n");
+    log_info("Found a connection");
     nng_mtx_lock(mut);
     Entity newPlayer = CreateEntity();
     AddComponent(newPlayer,humanID);
@@ -32,22 +32,38 @@ void Listen(void* nothing){
     Connection* conn = GetComponent(newPlayer,connID);
     conn->stream = nng_aio_get_output(listenIO,0);
     if(conn->stream == NULL){
-        printf("couldn't get output\n");
+        log_error("Couldn't get output");
         nng_mtx_unlock(mut);
         return;
     }
     nng_mtx_unlock(mut);
     Sendf(conn,"Welcome!");
-    Sendf(conn,"type 'help' for help, I guess.\n");
+    Sendf(conn,"type 'help' for help, I guess.");
     ReceiveListen(conn);
     nng_stream_listener_accept(listener,listenIO);
 }
 void SendCallback(void* voidConn){
-    Connection* conn = voidConn;
-    printf("sent item -> %s\n",conn->sendBuff);
+    int entity = (int)voidConn;
+    Connection* conn = GetComponent(entity,connID);
+    if(conn==NULL){
+        log_error("Failed to send message to old entity {E: %d - V: %d}!",ID(entity),VERSION(entity));
+        return;
+    }
+    log_info("sent message {%s} to entity {E: %d - V: %d}",conn->sendBuff,ID(entity),VERSION(entity));
 }
-void ReceiveCallBack(void* voidConn){
-    Connection* conn = voidConn;
+
+#define ENTFROMCOMP(comp) (int*)(((char*)comp)-sizeof(int))
+void ReceiveCallBack(void* ent){
+    int entity = (int)ent;
+    Connection* conn = GetComponent(entity,connID);
+    if(conn==NULL){
+        log_fatal("Entity in Receive {E: %d - V: %d} doesn't contain Connection {%d}!!!",ID(entity),VERSION(entity),
+                  connID);
+        nng_mtx_lock(mut);
+        AddComponent(entity, deleteID);
+        nng_mtx_unlock(mut);
+        return;
+    }
     //free what needs to be freed
 
     int rv;
@@ -55,18 +71,15 @@ void ReceiveCallBack(void* voidConn){
         if(rv == 7 || rv == 20 || rv == 31) {
             switch (rv) {
                 case 7:
-                    printf("Object is closed\n");
+                    log_warn("Object is closed");
                     break;
                 case 20:
-                    printf("Operation was cancelled\n");
+                    log_warn("Operation was cancelled");
                     return;//reuturn, because the cancelation came from DestroyEntity
                 case 31:
-                    printf("Connection was closed\n");
+                    log_warn("Connection was closed");
                     break;
             }
-            nng_mtx_lock(mut);
-            AddComponent(*(((int *) conn) - 1), deleteID);//done worry, be happy
-            nng_mtx_unlock(mut);
             return;
         }
         //    //7 is object close
@@ -75,27 +88,37 @@ void ReceiveCallBack(void* voidConn){
         //    return;
         //}
         Fatal("Receive nng_aio_result",rv);
-        printf("error: %d\n",rv);
+        log_error("Receive error: %d",rv);
+        nng_mtx_lock(mut);
+        AddComponent(*ENTFROMCOMP(conn), deleteID);//done worry, be happy
+        nng_mtx_unlock(mut);
         return;
     }
     int read = nng_aio_count(conn->input);
     if(read == 0){
-        printf("read zero\n");
-        ReceiveListen(conn);
+        log_warn("read zero");
+        nng_mtx_lock(mut);
+        AddComponent(*ENTFROMCOMP(conn), deleteID);//done worry, be happy
+        nng_mtx_unlock(mut);
         return;
     }
+    if(read >= 256)
+        log_warn("Received buffer >= 256! Might cause buffer overflow!");
     conn->receiveBuff[read] = 0;
-    printf("received data -> '%s'\n",conn->receiveBuff);
+    log_info("received data -> '%s'",conn->receiveBuff);
     if(strcmp(conn->receiveBuff,"quit")==0) {
         //quiting
         Sendf(conn, "Imagine quitting, I can't");
     }
     //not quitting
     nng_mtx_lock(mut);
+    log_info("Obtained lock");
     //push to the front of its list
     char* newStr = malloc(read+1);
     memcpy(newStr,conn->receiveBuff,read+1);//include the \0
-    AddNode(&conn->actions,0,newStr,read);//doesn't include \0
+    PushBack(&(conn->actions),newStr,read);//doesn't include \0
+    log_debug("Connection action list length: %d -> %s\n",conn->actions.count,conn->actions.count ? conn->actions
+    .start->data : "nothing");
     nng_mtx_unlock(mut);
     ReceiveListen(conn);
 }
@@ -112,18 +135,18 @@ int ServerInit(){
         return 1;
     }
     //tcp://138.247.108.215:8080
-    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.99.243:8080"))!=0){
+    if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.204.13:8080"))!=0){
         //if((rv= nng_stream_listener_alloc(&listener,"tcp://172.17.207.29:8080"))!=0){
     //if((rv= nng_stream_listener_alloc(&listener,"tcp://138.247.98.67:8080"))!=0){
         Fatal("nng_stream_listener_alloc",rv);
         return 1;
     }
-    printf("allocated listener\n");
+    log_info("allocated listener");
     if((rv=nng_stream_listener_listen(listener))!=0){
         Fatal("nng_stream_listener_listen",rv);
         return 1;
     }
-    printf("listening with listener\n");
+    log_info("listening with listener");
 
     if((rv=nng_aio_alloc(&listenIO,Listen,NULL))!=0){
         Fatal("listenIO nng_aio_alloc",rv);
@@ -133,7 +156,7 @@ int ServerInit(){
     return 0;
 }
 void FreeConnection(Connection* conn){
-    printf("destroying connection\n");
+    log_info("destroying connection");
     //nng_aio_cancel(conn->output);
     //nng_aio_wait(conn->input);
     //nng_aio_wait(conn->output);
@@ -149,7 +172,7 @@ void DestroyConnection(void* conn){
     FreeConnection(conn);
 }
 void ServerEnd(){
-    printf("freeing\n");
+    log_info("freeing connection");
     nng_stream_listener_close(listener);
     nng_stream_listener_free(listener);
     nng_aio_free(listenIO);
@@ -191,12 +214,12 @@ int ReceiveListen(Connection* conn){
 void ConnectionInit(void* emptyConn) {
     Connection *conn = emptyConn;
     int rv;
-    if ((rv = nng_aio_alloc(&conn->output, SendCallback, conn)) != 0) {
+    if ((rv = nng_aio_alloc(&conn->output, SendCallback,*ENTFROMCOMP(conn))) != 0) {
         Fatal("output nng_aio_alloc", rv);
         return;
     }
     //nng_aio_defer(conn->output,connectionCancel,NULL);
-    if ((rv = nng_aio_alloc(&conn->input, ReceiveCallBack, conn)) != 0) {
+    if ((rv = nng_aio_alloc(&conn->input, ReceiveCallBack,*ENTFROMCOMP(conn))) != 0) {
         Fatal("input nng_aio_alloc", rv);
         return;
     }

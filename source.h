@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 
+#include <log.h>
 
 #include "ecs.h"
 #include "vec.h"

@@ -1,5 +1,6 @@
 #include "ecs.h"
 #include <stdarg.h>
+#include "log.h"
 
 
 List components ={0};
@@ -19,6 +20,7 @@ CompID RegisterComponent(int typesize,componentInitFunc initFunc,componentDestro
     set->sparse = CreatePool(sizeof(short));
     set->packed = CreatePool(set->itemSize);//sudo struct for the win
     PushBack(&components,comp,sizeof(Component));
+    log_info("registering component of size %d",typesize);
     return componentID++;
 }
 int IsEntityValid(Entity entity){
@@ -64,6 +66,7 @@ int CreateEntity(){
     int entity = (int)eID;
     short* entityVersion = (short*)PL_GetItem(versions,eID);
     ((short*)&entity)[1] = *entityVersion;
+    log_info("Creating entity {E: %d - V: %d}",ID(entity),VERSION(entity));
     return entity;
 }
 void _RemoveComponent(Entity entity,Iter iterator){
@@ -98,18 +101,24 @@ void _RemoveComponent(Entity entity,Iter iterator){
             removeIter.root = &set->list;
             removeIter.i = -1;
             RemoveElement(&removeIter);
+            log_info("Deallocated array from packed list from component {%d}\n\tDown"
+                     " to size of %d.",iterator.i,set->itemCount);
         }
 
         unsigned short *nextDeleted = PL_GetItem(deleted, PL_GetNextItem(&deleted));
         *nextDeleted = (unsigned short) entity;
     }else{
-        printf("Attempted to delete a component that didn't exist {%d}\n",iterator.i);
+        log_error("Attempted to delete a component {%d} that didn't exist!",iterator.i);
+        //printf("Attempted to delete a component that didn't exist {%d}\n",iterator.i);
     }
+    log_info("Removed compenent {%d} from entity {E: %d - V: %d}\n\tComponent now has {%d} entities with it.",iterator
+    .i,ID(entity),VERSION(entity),comp->data.packed.itemCount);
 }
 void DestroyEntity(Entity entity){//actually fully destroys an enitity
     //check all component sparse sets and find the ones it is in. exterminate
     if(!IsEntityValid(entity)){
-        printf("Tried to delete invalid entity! E:%d V:%d\n",ID(entity), VERSION(entity));
+        //printf("Tried to delete invalid entity! E:%d V:%d\n",ID(entity), VERSION(entity));
+        log_error("Attempted to delete an invalid entity {E: %d - V: %d}!",ID(entity), VERSION(entity));
         return;
     }
     For_Each(components,iter){
@@ -120,17 +129,23 @@ void DestroyEntity(Entity entity){//actually fully destroys an enitity
     //find entity in versions
     short* version = ((short*) PL_GetItem(versions,(short)entity));
     (*version)++;
+    log_info("Successfully destroyed entity {E: %d - V: %d}",ID(entity),VERSION(entity));
 }
 void RemoveComponent(Entity entity,CompID component){
     For_Each(components,compIter){
         if(compIter.i == component){
             _RemoveComponent(entity,compIter);
+            log_info("Removed component {%d} from entity {E: %d - V: %d}",component,ID(entity),VERSION(entity));
+            return;
         }
     }
+    log_error("Attempted to remove a component {%d} from entity {E: %d - V: %d} where the component that didn't "
+              "exist!",ID(entity),VERSION(entity));
 }
 void AddComponent(Entity entity,CompID component){
     if(!IsEntityValid(entity)){
-        printf("Tried to add component to invalid entity! E:%d V:%d\n",ID(entity),VERSION(entity));
+        log_error("Tried to add component {%d} to invalid entity {E: %d - V: %d}!\n",component,ID(entity),VERSION
+        (entity));
         return;
     }
     For_Each(components,iter){
@@ -141,13 +156,17 @@ void AddComponent(Entity entity,CompID component){
             // will write our shit
             unsigned short* sparseEntry = PL_GetItem(comp->data.sparse,(short)entity);
             if(sparseEntry==NULL){
-                printf("Error trying to get entity (%d) from unallocated space\n",(unsigned short)entity);
+                log_error("Error trying to get entity {E: %d - V: %d} from unallocated space\n",ID(entity), VERSION
+                (entity));
             }
             *sparseEntry = (unsigned short)(compID+1);//+1 because 0 is reserved for INVALID. everything is
             // +1 for indexing set.packed.
             void* packedEntry = PL_GetItem(comp->data.packed,(unsigned short)(compID));
             *(int*)packedEntry = entity;//int for entire entity id, eID and version
             comp->initFunc(((char*)packedEntry)+sizeof(int));
+            log_info("Added component {%d} to entity {E: %d - V: %d}\n\tComponent now has {%d} entities with it.",iter
+            .i,ID(entity),VERSION(entity),comp->data.packed.itemCount);
+            return;
         }
     }
 }
@@ -191,7 +210,6 @@ void _CallSystem(SystemFunc func, CompID component, ...){
 void* GetComponent(Entity entity,CompID component){
     if(!IsEntityValid(entity)){
         //this is *a* way of testing if an entity is invalid
-        //printf("Tried to get component of invalid entity! E:%d V:%d\n",ID(entityID),VERSION(entityID));
         return NULL;
     }
     For_Each(components,iter){
@@ -204,12 +222,13 @@ void* GetComponent(Entity entity,CompID component){
                 return (char*)componentData+sizeof(int);
             }else{
                 //this entity doesn't have this component
-                printf("This entity (%d) doesn't have this component! (%d)\n", entity, component);
+                log_error("Failed to get component {%d} from entity {E: %d - V: %d}!",component,ID(entity),VERSION
+                (entity));
                 return NULL;
             }
         }
     }
-    printf("No component with id %d\n", component);
+    log_error("Tried to get component {%d} that doesn't exist!",component);
     return NULL;
 }
 
@@ -253,7 +272,7 @@ void ForSysDec(SysIter* iter){
         if(Dec(&iter->arrayIter) == 0){
             //no more arrays, do something that will cause ForSysTest to trip
             //return;
-            printf("done with array\n");
+            //printf("done with array\n");
         }
         //update ptr
         iter->ptr = ((char*)iter->arrayIter.this->data + sizeof(int) + (iter->comp->data.itemPoolCount-1)*
@@ -275,7 +294,7 @@ int HasComponent(Entity entity, CompID component) {
             }else return 1;
         }
     }
-    printf("Tried to call HasComponent with a component (%d) that doesn't exist!\n", component);
+    log_error("Tried to call HasComponent with a component {%d} that doesn't exist!\n", component);
     return 0;
 }
 

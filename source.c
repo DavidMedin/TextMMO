@@ -2,10 +2,11 @@
 #include "GameActions.h"
 
 /*
+ * TODO: Investigate New Entity having the same id as the last created.
+ * TODO: dear imgui viewer
  * TODO: more game managing stuff (pick up item,drop item,list hands,drop stuff when you die, etc.)
  * TODO: Server Selection
  * TODO: Login (volatile data)
- * TODO: Log to file
  * TODO: System Mail System
  * TODO: Unity instruction compressing (look -> 0x5, reset -> 0x6)
  *      ^ Puts lets strain on network and server
@@ -36,14 +37,14 @@ void AIInit(void* rawAI){
 }
 void DeleteInit(void* n){}
 void DeleteDefered(Entity entity){
-    printf("destroying entity {%d}\n",entity);
+    log_debug("Defered Destruction",entity);
     DestroyEntity(entity);
 }
 
 void HumanoidDestroy(void* humanVoid){
     Humanoid* human = humanVoid;
     if(!human){
-        printf("Fatal humanoid destroy\n");
+        log_fatal("Fatal humanoid destroy");
         return;
     }
    for(int i =0;i < 2;i++){
@@ -135,6 +136,11 @@ int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
 
+    FILE* logOut = fopen("log.txt","w");
+    if(logOut==NULL)
+        printf("Failed to open file!\n");
+    log_add_fp(logOut,0);
+
     ECSStartup();
 
     deleteID = RegisterComponent(0,DeleteInit,NULL);
@@ -151,8 +157,9 @@ int main(int argc,char** argv){
     if(ServerInit()){
         return 1;
     }
-    printf("started\n");
+    log_debug("started\n");
 
+    nng_mtx_lock(mut);
     Entity sword = CreateEntity();
     AddComponent(sword,itemID);
     AddComponent(sword,lookID);
@@ -173,6 +180,7 @@ int main(int argc,char** argv){
     Lookable* orcLook = GetComponent(orc,lookID);
     orcLook->name = "the orc";
     orcHuman->hands[1] = orcishSword;
+    nng_mtx_unlock(mut);
 
     while(quitting != 1){
         nng_mtx_lock(mut);
@@ -187,7 +195,8 @@ int main(int argc,char** argv){
                     strcpy(old,msg);
                     old[strlen(msg)]=0;
                     if(strcmp(msg,"quit")==0){
-                        DestroyEntity(connIter.ent);
+                        AddComponent(connIter.ent,deleteID);
+                        //DestroyEntity(connIter.ent);
                         free(old);
                         break;
                     }else
@@ -200,12 +209,13 @@ int main(int argc,char** argv){
             }
         }
         CallSystem(DeleteDefered,deleteID);
-        //For_System(deleteID,deleteIter){
+        //For_System(deleteID,deleteIter) {
         //    DestroyEntity(deleteIter.ent);
         //}
         nng_mtx_unlock(mut);
     }
     ServerEnd();
+    fclose(logOut);
 
     return 0;
 }
