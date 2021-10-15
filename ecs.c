@@ -43,6 +43,7 @@ int IsEntityValid(Entity entity){
 int CreateEntity(){
     //Is there anything in the deleted array?
     unsigned short eID;
+    log_debug("Deleted list is {%d} long",deleted.itemCount);
     if(deleted.itemCount != 0){
         //yup!
         //Use the first as our new entity, and move the last in the array to the beginning
@@ -56,6 +57,7 @@ int CreateEntity(){
     }else{
         //Nope
         //resize Version and components.sparse as needed. or anything else that is scaled with entity count.
+        log_debug("Version is of size {%d}, using or entity ID",versions.itemCount);
         eID = PL_GetNextItem(&versions);
         For_Each(components,iter){
             Component* comp = Iter_Val(iter,Component);
@@ -105,8 +107,6 @@ void _RemoveComponent(Entity entity,Iter iterator){
                      " to size of %d.",iterator.i,set->itemCount);
         }
 
-        unsigned short *nextDeleted = PL_GetItem(deleted, PL_GetNextItem(&deleted));
-        *nextDeleted = (unsigned short) entity;
     }else{
         log_error("Attempted to delete a component {%d} that didn't exist!",iterator.i);
         //printf("Attempted to delete a component that didn't exist {%d}\n",iterator.i);
@@ -126,9 +126,12 @@ void DestroyEntity(Entity entity){//actually fully destroys an enitity
             _RemoveComponent(entity,iter);
         }
     }
+    unsigned short *nextDeleted = PL_GetItem(deleted, PL_GetNextItem(&deleted));
+    *nextDeleted = (unsigned short) entity;
     //find entity in versions
     short* version = ((short*) PL_GetItem(versions,(short)entity));
     (*version)++;
+    log_debug("Incremented version for entity {E: %d} to {V: %d}",ID(entity),*version);
     log_info("Successfully destroyed entity {E: %d - V: %d}",ID(entity),VERSION(entity));
 }
 void RemoveComponent(Entity entity,CompID component){

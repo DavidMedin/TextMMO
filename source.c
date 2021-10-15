@@ -209,9 +209,6 @@ int main(int argc,char** argv){
             }
         }
         CallSystem(DeleteDefered,deleteID);
-        //For_System(deleteID,deleteIter) {
-        //    DestroyEntity(deleteIter.ent);
-        //}
         nng_mtx_unlock(mut);
     }
     ServerEnd();
