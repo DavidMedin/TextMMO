@@ -6,8 +6,8 @@ void Fatal(const char* func,int error){
     log_error("%s error: %s",func,nng_strerror(error));
 
 }
-char* names[] = {"Jimmy","Garret","Karina"};
-int nameCount = 3;
+//char* names[] = {"Jimmy","Garret","Karina"};
+//int nameCount = 3;
 void SendCallback(void* nothing);
 void ReceiveCallBack(void* nothing);
 void Listen(void* nothing){
@@ -20,16 +20,17 @@ void Listen(void* nothing){
     log_info("Found a connection");
     nng_mtx_lock(mut);
     Entity newPlayer = CreateEntity();
-    AddComponent(newPlayer,humanID);
-    AddComponent(newPlayer,lookID);
+    //AddComponent(newPlayer,humanID);
+    //AddComponent(newPlayer,lookID);
     static int next = 0;
-    ((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
-    if(++next >= nameCount){
-        next = 0;
-    }
-    AddComponent(newPlayer,meatID);
+    //((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
+    //if(++next >= nameCount){
+    //    next = 0;
+    //}
+    //AddComponent(newPlayer,meatID);
     AddComponent(newPlayer,connID);
     Connection* conn = GetComponent(newPlayer,connID);
+    conn->loggingIn = 1;
     conn->stream = nng_aio_get_output(listenIO,0);
     if(conn->stream == NULL){
         log_error("Couldn't get output");
@@ -37,8 +38,8 @@ void Listen(void* nothing){
         return;
     }
     nng_mtx_unlock(mut);
-    Sendf(conn,"Welcome, E: %d - V: %d!",ID(newPlayer),VERSION(newPlayer));
-    Sendf(conn,"type 'help' for help, I guess.");
+    //Sendf(conn,"Welcome, E: %d - V: %d!",ID(newPlayer),VERSION(newPlayer));
+    //Sendf(conn,"type 'help' for help, I guess.");
     ReceiveListen(conn);
     nng_stream_listener_accept(listener,listenIO);
 }
@@ -80,15 +81,15 @@ void ReceiveCallBack(void* ent){
                     log_warn("Connection was closed");
                     break;
             }
-            return;
+        }else{
+            Fatal("Receive nng_aio_result",rv);
+            log_error("Receive error: %d",rv);
         }
         //    //7 is object close
         //    //20 is cancelled
         //    //31 is connection shutdown
         //    return;
         //}
-        Fatal("Receive nng_aio_result",rv);
-        log_error("Receive error: %d",rv);
         nng_mtx_lock(mut);
         AddComponent(*ENTFROMCOMP(conn), deleteID);//done worry, be happy
         nng_mtx_unlock(mut);

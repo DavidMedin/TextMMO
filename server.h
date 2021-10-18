@@ -20,6 +20,8 @@ typedef struct{
     char* sendBuff;
     unsigned int sendBuffEnd;//index to the end
     List actions;//list of Messages (v) to process on main thread. NEW MEMORY
+
+    char loggingIn;
 }Connection;
 void ConnectionInit(void* emptyConn);
 void FreeConnection(Connection* conn);

@@ -25,7 +25,7 @@ void Look(Entity looker){
     int found = 0;
     For_System(lookID, lookIter) {
         Lookable *look = SysIterVal(lookIter, Lookable);
-        if (lookIter.ent != looker) {
+        if (look->isVisible==1 && lookIter.ent != looker) {
             //this isn't us
             int testItem = HasComponent(lookIter.ent,itemID);
             char* prepend = testItem ? "<color=blue>" : "";
@@ -167,6 +167,9 @@ void PickUp(Entity picker,int hand,Entity pickee){
         }
         human->hands[hand] = pickee;
         item->owner = picker;
+        Lookable* look = GetComponent(pickee,lookID);
+        if(look)
+            look->isVisible = 0;
         if(conn){
             Lookable* lookee = GetComponent(pickee,lookID);
             char* name = "something?";
@@ -178,4 +181,30 @@ void PickUp(Entity picker,int hand,Entity pickee){
                   "components (humanoid {%d}, item {%d}",ID(picker),VERSION(picker),ID(pickee),VERSION(pickee),
                   humanID,itemID);
     }
+}
+
+void DropItem(Entity dropper,int hand){
+    log_debug("performing DropItem");
+    if(hand < 0 || hand > 1){
+        log_error("Failed to drop item with invalid hand {%d}",hand);
+        return;
+    }
+    Humanoid* human = GetComponent(dropper,humanID);
+    if(!human){
+        log_error("Failed to drop item from invalid entity {E: %d - V: %d}",ID(dropper),VERSION(dropper));
+        return;
+    }
+    Item* item = GetComponent(human->hands[hand],itemID);
+    Connection* conn = GetComponent(dropper,connID);
+    if(!item){
+        log_error("Failed to drop item in empty hand {%d}",hand);
+        return;
+    }
+    item->owner = 0;
+    Lookable* look = GetComponent(human->hands[hand],lookID);
+    if(look)
+        look->isVisible = 1;
+    human->hands[hand] = 0;
+    if(conn)
+        Sendf(conn,"You dropped an item");
 }

@@ -2,10 +2,8 @@
 #include "GameActions.h"
 
 /*
- * TODO: Investigate New Entity having the same id as the last created.
- * TODO: dear imgui viewer
- * TODO: more game managing stuff (pick up item,drop item,list hands,drop stuff when you die, etc.)
  * TODO: Server Selection
+ * TODO: dear imgui viewer
  * TODO: Login (volatile data)
  * TODO: System Mail System
  * TODO: Unity instruction compressing (look -> 0x5, reset -> 0x6)
@@ -21,6 +19,7 @@ void MeatBagInit(void* rawMeat){
  void LookableInit(void* lookable){
     Lookable* look = lookable;
     look->name = "Unknown Thing";
+    look->isVisible = 1;
 }
 void HumanoidInit(void* human){
     Humanoid* oid = human;
@@ -127,6 +126,9 @@ int DoAction(Entity ent,char* line){
             }
             done:;
             return 0;
+        }else if(strcmp(action,"drop")==0){
+            DropItem(ent,0);
+            return 0;
         }
     }
     CallSystem(AIUpdate,humanID,aiID);
@@ -196,7 +198,6 @@ int main(int argc,char** argv){
                     old[strlen(msg)]=0;
                     if(strcmp(msg,"quit")==0){
                         AddComponent(connIter.ent,deleteID);
-                        //DestroyEntity(connIter.ent);
                         free(old);
                         break;
                     }else

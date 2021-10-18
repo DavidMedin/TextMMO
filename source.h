@@ -13,6 +13,7 @@ Entity character;
 CompID deleteID,lookID,meatID,humanID,itemID,aiID,connID;
 typedef struct{
     char* name;
+    char isVisible;
 }Lookable;
 typedef struct{
     int health;//max 100
