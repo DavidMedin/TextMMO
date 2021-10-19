@@ -1,17 +1,6 @@
 #include "source.h"
 #include "GameActions.h"
 
-/*
- * TODO: Server Selection
- * TODO: dear imgui viewer
- * TODO: Login (volatile data)
- * TODO: System Mail System
- * TODO: Unity instruction compressing (look -> 0x5, reset -> 0x6)
- *      ^ Puts lets strain on network and server
- * TODO: async NPC enemies (attack every 5 seconds or whatever)
- */
-
-
 void MeatBagInit(void* rawMeat){
     MeatBag* you = rawMeat;
     you->health = 100;
@@ -88,7 +77,7 @@ void AIUpdate(Entity entity){
 }
 
 int quitting = 0;
-int DoAction(Entity ent,char* line){
+int UpdateHumanoid(Entity ent,char* line){
     List tokens = Listify(line);
     if(tokens.count != 0) {
         char *action = tokens.start->data;
