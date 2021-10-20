@@ -1,3 +1,4 @@
+#pragma once
 #define VECTOR_ALLOC_SIZE 100
 typedef struct{
     void* data;

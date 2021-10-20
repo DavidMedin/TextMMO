@@ -37,7 +37,7 @@ set(SOURCE_FILES
         GameActions.h
         source.h
         deps/logger/log.c
-        )
+        Content/humanoid.c Content/humanoid.h Content/lookable.c Content/lookable.h Content/item.c Content/item.h)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 add_executable(Textlicious ${SOURCE_FILES})
 target_link_libraries(Textlicious nng m)

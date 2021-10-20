@@ -10,11 +10,6 @@ void MeatBagInit(void* rawMeat){
     look->name = "Unknown Thing";
     look->isVisible = 1;
 }
-void HumanoidInit(void* human){
-    Humanoid* oid = human;
-    oid->hands[0] = 0;//empty left hand
-    oid->hands[1] = 0;//empty right hand
-}
 void ItemInit(void* rawItem){
     Item* item = rawItem;
     item->damage = 20;
@@ -29,18 +24,6 @@ void DeleteDefered(Entity entity){
     DestroyEntity(entity);
 }
 
-void HumanoidDestroy(void* humanVoid){
-    Humanoid* human = humanVoid;
-    if(!human){
-        log_fatal("Fatal humanoid destroy");
-        return;
-    }
-   for(int i =0;i < 2;i++){
-       Item* item = GetComponent(human->hands[i],itemID);
-       if(item)
-           item->owner = 0;
-   }
-}
 void AIUpdate(Entity entity){
     //goes for all the AI entities
     AI* ai = GetComponent(entity,aiID);
@@ -77,52 +60,6 @@ void AIUpdate(Entity entity){
 }
 
 int quitting = 0;
-int UpdateHumanoid(Entity ent,char* line){
-    List tokens = Listify(line);
-    if(tokens.count != 0) {
-        char *action = tokens.start->data;
-        if (strcmp(action, "attack") == 0) {
-            AttackString(ent, tokens);
-            return 0;
-        } else if (strcmp(action, "look") == 0) {
-            Look(ent);
-            return 0;
-        } else if (strcmp(action, "spawn") == 0) {
-            SpawnGoblin();
-            return 0;
-        }else if(strcmp(action, "help") == 0){
-            //print some helpful stuff
-            Sendf(GetComponent(ent,connID),"Commands----------\n\t*look\t--look around\n\t*attack {enemy "
-                                          "name}\t--attack that "
-                   "bitch\n\t*pick up {item}\t--pick up the item\n\t*spawn\t--spawn a goblin (for testing stuff)"
-                   "\n\t*help\t--you are "
-                   "here\n\t*quit\t--imagine quiting, I can't\n\t*join\t--join back in after quitting.");
-            return 0;
-        }
-        else if(strcmp(action, "pick")==0 && strcmp((char*)tokens.start->next->data,"up")==0){
-            char* itemName = tokens.start->next->next->data;
-            For_System(lookID,lookIter){
-                Lookable* lookee = SysIterVal(lookIter,Lookable);
-                if(strcmp(lookee->name,itemName)==0){
-                    PickUp(ent,0,lookIter.ent);
-                    goto done;
-                }
-            }
-            //didn't find it
-            Connection* conn = GetComponent(ent,connID);
-            if(conn){
-                Sendf(conn,"That item doesn't exist!");
-            }
-            done:;
-            return 0;
-        }else if(strcmp(action,"drop")==0){
-            DropItem(ent,0);
-            return 0;
-        }
-    }
-    CallSystem(AIUpdate,humanID,aiID);
-    return 1;
-}
 int main(int argc,char** argv){
     setbuf(stdout,0);//bruh why do I have to do this?
     srand(time(NULL));
@@ -175,30 +112,7 @@ int main(int argc,char** argv){
 
     while(quitting != 1){
         nng_mtx_lock(mut);
-        //go through connections and read their actions
-        For_System(connID,connIter){
-            Connection* conn = connIter.ptr;
-            if(conn->actions.count > 0){
-                //do actions
-                For_Each(conn->actions,actionIter){
-                    char* msg = Iter_Val(actionIter,char);
-                    char* old = malloc(strlen(msg)+1);//preserve message before strtok
-                    strcpy(old,msg);
-                    old[strlen(msg)]=0;
-                    if(strcmp(msg,"quit")==0){
-                        AddComponent(connIter.ent,deleteID);
-                        free(old);
-                        break;
-                    }else
-                        if(DoAction(connIter.ent,msg)){
-                            TellEveryone("%s",old);
-                        }
-                    free(old);
-                    RemoveElement(&actionIter);
-                }
-            }
-        }
-        CallSystem(DeleteDefered,deleteID);
+        CallSystem(HumanConnUpdate,connID,humanID);
         nng_mtx_unlock(mut);
     }
     ServerEnd();

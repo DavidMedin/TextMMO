@@ -6,8 +6,8 @@ void Fatal(const char* func,int error){
     log_error("%s error: %s",func,nng_strerror(error));
 
 }
-//char* names[] = {"Jimmy","Garret","Karina"};
-//int nameCount = 3;
+char* names[] = {"Jimmy","Garret","Karina"};
+int nameCount = 3;
 void SendCallback(void* nothing);
 void ReceiveCallBack(void* nothing);
 void Listen(void* nothing){
@@ -20,14 +20,14 @@ void Listen(void* nothing){
     log_info("Found a connection");
     nng_mtx_lock(mut);
     Entity newPlayer = CreateEntity();
-    //AddComponent(newPlayer,humanID);
-    //AddComponent(newPlayer,lookID);
+    AddComponent(newPlayer,humanID);
+    AddComponent(newPlayer,lookID);
     static int next = 0;
-    //((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
-    //if(++next >= nameCount){
-    //    next = 0;
-    //}
-    //AddComponent(newPlayer,meatID);
+    ((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
+    if(++next >= nameCount){
+        next = 0;
+    }
+    AddComponent(newPlayer,meatID);
     AddComponent(newPlayer,connID);
     Connection* conn = GetComponent(newPlayer,connID);
     conn->loggingIn = 1;
@@ -38,8 +38,8 @@ void Listen(void* nothing){
         return;
     }
     nng_mtx_unlock(mut);
-    //Sendf(conn,"Welcome, E: %d - V: %d!",ID(newPlayer),VERSION(newPlayer));
-    //Sendf(conn,"type 'help' for help, I guess.");
+    Sendf(conn,"Welcome, E: %d - V: %d!",ID(newPlayer),VERSION(newPlayer));
+    Sendf(conn,"type 'help' for help, I guess.");
     ReceiveListen(conn);
     nng_stream_listener_accept(listener,listenIO);
 }

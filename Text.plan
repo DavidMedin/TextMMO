@@ -4,8 +4,8 @@
   "BoardIndex": 0,
   "BoardCount": 2,
   "AutoSave": true,
-  "Pan.X": -1005.072265625,
-  "Pan.Y": -165.66680908203125,
+  "Pan.X": -1442.9283447265625,
+  "Pan.Y": 319.7325439453125,
   "ZoomLevel": 4,
   "TaskTransparency": 5,
   "OutlineTasks": true,
@@ -617,7 +617,7 @@
       "Progression.Current": 0,
       "Progression.Max": 0,
       "Description": "Wait(MailHndl)",
-      "Selected": false,
+      "Selected": true,
       "TaskType.CurrentChoice": 0,
       "CreationTime": "Oct 18 2021 22:54:00"
     }, 
@@ -1059,7 +1059,7 @@
     }, 
     {
       "BoardIndex": 0,
-      "Position.X": 1584,
+      "Position.X": 1600,
       "Position.Y": -96,
       "Checkbox.Checked": false,
       "Progression.Current": 0,
@@ -1422,5 +1422,6 @@
       "Selected": false,
       "TaskType.CurrentChoice": 2,
       "CreationTime": "Oct 19 2021 00:23:51"
-    }, 
-    
+    }
+  ]
+}

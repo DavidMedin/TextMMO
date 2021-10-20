@@ -7,6 +7,7 @@
 #include <nng/supplemental/util/platform.h>
 
 #include <ecs.h>
+#include "Content/humanoid.h"
 #include <list.h>
 
 nng_stream_listener* listener;
