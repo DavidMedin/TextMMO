@@ -33,8 +33,6 @@ set(SOURCE_FILES
         vec.h
         server.c
         server.h
-        GameActions.c
-        GameActions.h
         source.h
         deps/logger/log.c
         Content/humanoid.c Content/humanoid.h Content/lookable.c Content/lookable.h Content/item.c Content/item.h)

@@ -76,10 +76,15 @@ void ReceiveCallBack(void* ent){
                     break;
                 case 20:
                     log_warn("Operation was cancelled");
-                    return;//reuturn, because the cancelation came from DestroyEntity
+                    return;
                 case 31:
                     log_warn("Connection was closed");
                     break;
+            }
+            //test to see if we should delete, because this might be because of the entity destructor.
+            if(!IsEntityValid(entity)){
+                log_warn("Entity is already dead, skipping deletion");
+                return;
             }
         }else{
             Fatal("Receive nng_aio_result",rv);
@@ -242,4 +247,11 @@ void ConnectionInit(void* emptyConn) {
     conn->actions.count = 0;
     conn->actions.start = NULL;
     conn->actions.end = NULL;
+}
+void TellEveryone(const char* format,...){
+    va_list args;
+    va_start(args,format);
+    For_System(connID,connIter){
+        Sendfa(connIter.ptr,format,args);
+    }
 }

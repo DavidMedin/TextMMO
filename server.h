@@ -40,6 +40,7 @@ int Send(Connection* conn);//sends
 void WriteOutput(Connection* conn,const char* format,...);//only writes to output
 int ReceiveListen(Connection* conn);
 
+void TellEveryone(const char* format,...);
 /*
 //thread functions
 void DeferDestruction(Entity ent);//wait for thread(found in Connection component) to finish, then destroies entity

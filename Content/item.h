@@ -7,3 +7,4 @@
 #define TEXTLICIOUS_ITEM_H
 
 #endif //TEXTLICIOUS_ITEM_H
+void DealDamage(Entity defender,int damage);

@@ -1,5 +1,4 @@
 #include "source.h"
-#include "GameActions.h"
 
 void MeatBagInit(void* rawMeat){
     MeatBag* you = rawMeat;

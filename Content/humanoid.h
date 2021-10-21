@@ -2,6 +2,7 @@
 #include "ecs.h"
 #include "source.h"
 #include "lookable.h"
+#include "item.h"
 CompID humanID;
 typedef struct{
     Entity hands[2];//can hold Items
@@ -13,3 +14,5 @@ void HumanoidInit(void* human);
 void HumanoidDestroy(void* humanVoid);
 void PickUp(Entity picker,int hand,Entity pickee);
 void DropItem(Entity dropper,int hand);
+void AttackString(Entity attacker,List tokens);
+void Attack(Entity attacker,int hand,Entity defender);
