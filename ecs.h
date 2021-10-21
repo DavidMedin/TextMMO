@@ -39,7 +39,7 @@ int IsEntityValid(Entity entity);
 int CreateEntity();
 void DestroyEntity(Entity entity);
 void RemoveComponent(Entity entity,CompID component);
-void AddComponent(Entity entity,CompID component);
+void* AddComponent(Entity entity,CompID component);
 #define CallSystem(func,...) _CallSystem(func,__VA_ARGS__,-1)//I don't like -1. Components don't have negative
 // values, which means that we *could* use unsigned numbers, that would make this bad.if we really wanted to we could
 // have an 'index space' and a 'null space' like with entity ids.

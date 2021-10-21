@@ -145,7 +145,7 @@ void RemoveComponent(Entity entity,CompID component){
     log_error("Attempted to remove a component {%d} from entity {E: %d - V: %d} where the component that didn't "
               "exist!",ID(entity),VERSION(entity));
 }
-void AddComponent(Entity entity,CompID component){
+void* AddComponent(Entity entity,CompID component){
     if(!IsEntityValid(entity)){
         log_error("Tried to add component {%d} to invalid entity {E: %d - V: %d}!\n",component,ID(entity),VERSION
         (entity));
@@ -169,7 +169,7 @@ void AddComponent(Entity entity,CompID component){
             comp->initFunc(((char*)packedEntry)+sizeof(int));
             log_info("Added component {%d} to entity {E: %d - V: %d}\n\tComponent now has {%d} entities with it.",iter
             .i,ID(entity),VERSION(entity),comp->data.packed.itemCount);
-            return;
+            return ((char*)packedEntry)+sizeof(int);
         }
     }
 }

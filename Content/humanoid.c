@@ -69,7 +69,6 @@ void HumanConnUpdate(Entity ent) {//System for Humanoid and Connection
             RemoveElement(&actionIter);
         }
     }
-    CallSystem(DeleteDefered,deleteID);
 }
 void HumanAIUpdate(Entity ent);//System for Humanoid and AI
 void HumanoidInit(void* human){

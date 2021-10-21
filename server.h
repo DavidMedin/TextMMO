@@ -23,6 +23,7 @@ typedef struct{
     List actions;//list of Messages (v) to process on main thread. NEW MEMORY
 
     char loggingIn;
+    char* username;
 }Connection;
 void ConnectionInit(void* emptyConn);
 void FreeConnection(Connection* conn);
@@ -41,6 +42,7 @@ void WriteOutput(Connection* conn,const char* format,...);//only writes to outpu
 int ReceiveListen(Connection* conn);
 
 void TellEveryone(const char* format,...);
+void TryLogin(Entity entity);//System for Connections
 /*
 //thread functions
 void DeferDestruction(Entity ent);//wait for thread(found in Connection component) to finish, then destroies entity

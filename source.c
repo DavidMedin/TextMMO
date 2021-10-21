@@ -112,6 +112,8 @@ int main(int argc,char** argv){
     while(quitting != 1){
         nng_mtx_lock(mut);
         CallSystem(HumanConnUpdate,connID,humanID);
+        CallSystem(TryLogin,connID);
+        CallSystem(DeleteDefered,deleteID);
         nng_mtx_unlock(mut);
     }
     ServerEnd();

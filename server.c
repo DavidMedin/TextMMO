@@ -20,14 +20,14 @@ void Listen(void* nothing){
     log_info("Found a connection");
     nng_mtx_lock(mut);
     Entity newPlayer = CreateEntity();
-    AddComponent(newPlayer,humanID);
-    AddComponent(newPlayer,lookID);
-    static int next = 0;
-    ((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
-    if(++next >= nameCount){
-        next = 0;
-    }
-    AddComponent(newPlayer,meatID);
+    //AddComponent(newPlayer,humanID);
+    //AddComponent(newPlayer,lookID);
+    //static int next = 0;
+    //((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
+    //if(++next >= nameCount){
+    //    next = 0;
+    //}
+    //AddComponent(newPlayer,meatID);
     AddComponent(newPlayer,connID);
     Connection* conn = GetComponent(newPlayer,connID);
     conn->loggingIn = 1;
@@ -38,8 +38,6 @@ void Listen(void* nothing){
         return;
     }
     nng_mtx_unlock(mut);
-    Sendf(conn,"Welcome, E: %d - V: %d!",ID(newPlayer),VERSION(newPlayer));
-    Sendf(conn,"type 'help' for help, I guess.");
     ReceiveListen(conn);
     nng_stream_listener_accept(listener,listenIO);
 }
@@ -112,7 +110,7 @@ void ReceiveCallBack(void* ent){
         log_warn("Received buffer >= 256! Might cause buffer overflow!");
     conn->receiveBuff[read] = 0;
     log_info("received data -> '%s'",conn->receiveBuff);
-    if(strcmp(conn->receiveBuff,"quit")==0) {
+    if(!conn->loggingIn && strcmp(conn->receiveBuff,"quit")==0) {
         //quiting
         Sendf(conn, "Imagine quitting, I can't");
     }
@@ -163,9 +161,12 @@ int ServerInit(){
 }
 void FreeConnection(Connection* conn){
     log_info("destroying connection");
-    //nng_aio_cancel(conn->output);
-    //nng_aio_wait(conn->input);
-    //nng_aio_wait(conn->output);
+    //tell everyone
+    For_System(connID,connIter){
+        if(connIter.ent != *ENTFROMCOMP(conn)){
+            Sendf(connIter.ptr,"%s disconnected",conn->username);
+        }
+    }
     nng_aio_stop(conn->input);
     nng_aio_stop(conn->output);
     nng_aio_free(conn->input);
@@ -253,5 +254,49 @@ void TellEveryone(const char* format,...){
     va_start(args,format);
     For_System(connID,connIter){
         Sendfa(connIter.ptr,format,args);
+    }
+}
+void TryLogin(Entity entity){
+    Connection* conn = GetComponent(entity,connID);
+    if(conn->loggingIn == 0 && conn->actions.count != 0){
+        log_error("Action stack was not destroyed.");
+        return;
+    }
+    if(conn->actions.count == 0) return;
+    //it is assumed that any 'action' that comes through here is a name.
+    //check if this name is taken
+    For_System(connID,connIter){
+        Connection* otherConn = connIter.ptr;
+        if(connIter.ent == entity || otherConn->loggingIn == 0) break;
+        if(otherConn->username == NULL){
+            log_fatal("Entity {E: %d - V: %d} is not logging in, and their username")
+        }
+        if(strcmp(otherConn->username,conn->username)!=0){
+            //send error to client
+            *conn->sendBuff = 1;
+            strcpy(conn->sendBuff + 1,"That username is taken.");
+            Send(conn);
+            return;
+        }
+    }
+    conn->username = conn->actions.start->data;
+    Iter tmpIter = List_FindPointer(&conn->actions,conn->username);
+    RemoveElementNF(&tmpIter);
+    if(conn->actions.count > 0){
+        log_warn("Still remaining actions in 'stack'.");
+    }
+    Entity connEnt = *ENTFROMCOMP(conn);
+    Humanoid* human = AddComponent(connEnt,humanID);
+    Lookable* look = AddComponent(connEnt,lookID);
+    look->name = conn->username;
+    MeatBag* meat = AddComponent(connEnt,meatID);
+    conn->loggingIn = 0;
+
+    Sendf(conn,"Welcome, %s! {E: %d - V: %d}",conn->username,ID(entity),VERSION(entity));
+    Sendf(conn,"type 'help' for help, I guess.");
+    For_System(connID,connIter){
+        if(connIter.ent != *ENTFROMCOMP(conn)){
+            Sendf(connIter.ptr,"%s connected!",conn->username);
+        }
     }
 }
