@@ -48,7 +48,7 @@ void SendCallback(void* voidConn){
         log_error("Failed to send message to old entity {E: %d - V: %d}!",ID(entity),VERSION(entity));
         return;
     }
-    log_info("sent message {%s} to entity {E: %d - V: %d}",conn->sendBuff,ID(entity),VERSION(entity));
+    log_info("sent message {%d : %s} to entity {E: %d - V: %d}",(char)*conn->sendBuff,conn->sendBuff+1,ID(entity),VERSION(entity));
 }
 
 #define ENTFROMCOMP(comp) (int*)(((char*)comp)-sizeof(int))
@@ -201,14 +201,14 @@ int Sendf(Connection* conn,Header head,const char* format,...){
     va_list args;
     va_start(args,format);
     nng_aio_wait(conn->output);
-    *conn->sendBuff = head;
-    vsprintf(conn->sendBuff+sizeof(head),format,args);
+    *conn->sendBuff = (char)head;
+    vsprintf(conn->sendBuff+1,format,args);
     Send(conn);
     return 0;
 }
 int Sendfa(Connection* conn,Header head,const char* format,va_list args){
-    *conn->sendBuff = head,
-    vsprintf(conn->sendBuff+sizeof(head),format,args);
+    *conn->sendBuff = (char)head,
+    vsprintf(&conn->sendBuff[1],format,args);
     Send(conn);
     return 0;
 }
@@ -278,7 +278,7 @@ void TryLogin(Entity entity){
         if(strcmp(otherConn->username,conn->username)!=0){
             //send error to client
             Sendf(conn, usr_err, "That username is taken.");
-            Send(conn);
+            //Send(conn);
             return;
         }
     }
@@ -294,7 +294,7 @@ void TryLogin(Entity entity){
     look->name = conn->username;
     AddComponent(connEnt,meatID);
     conn->loggingIn = 0;
-
+    Sendf(conn,login,"");//tell the client that the login was sucessful
     Sendf(conn,msg,"Welcome, %s! {E: %d - V: %d}",conn->username,ID(entity),VERSION(entity));
     Sendf(conn,msg,"type 'help' for help, I guess.");
     For_System(connID,connIter){

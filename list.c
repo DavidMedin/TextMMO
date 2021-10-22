@@ -4,10 +4,10 @@
 // 0 is before list, increments from there
 Link AddNode(List* list,int index,void* data,size_t dataSize){
 	//check if out of range
-	if(index>list->count || index<0){
-		printf("index %d out of range!\n",index);
-		return NULL;
-	}
+	if(index>list->count || index<0) {
+        printf("index %d out of range!\n", index);
+        return NULL;
+    }
 	Link newLink = malloc(sizeof(struct Link_t));
 	newLink->data = data;
 	newLink->dataSize = dataSize;

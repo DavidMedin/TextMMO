@@ -10,6 +10,7 @@ void Look(Entity looker){
         return;
     }
     //print all entities that isn't you
+    WriteOutput(conn,"%c",msg);
     WriteOutput(conn,"You look around and see:");
     int found = 0;
     For_System(lookID, lookIter) {
