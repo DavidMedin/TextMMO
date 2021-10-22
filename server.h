@@ -13,6 +13,13 @@
 nng_stream_listener* listener;
 nng_aio* listenIO;//listen  for incoming connections
 
+typedef enum{
+    msg,
+    usr_err,
+    login
+}Header;//This enum should be the first byte of any message to a client.
+
+
 typedef struct{
     nng_aio* input;
     nng_aio* output;
@@ -35,13 +42,13 @@ nng_mtx* mut;
 
 int ServerInit();
 void ServerEnd();
-int Sendf(Connection* conn,const char* format,...);//writes to output, and sends
-int Sendfa(Connection* conn,const char* format,va_list args);//writes to output, and sends
+int Sendf(Connection* conn,Header head,const char* format,...);//writes to output, and sends
+int Sendfa(Connection* conn,Header hed,const char* format,va_list args);//writes to output, and sends
 int Send(Connection* conn);//sends
 void WriteOutput(Connection* conn,const char* format,...);//only writes to output
 int ReceiveListen(Connection* conn);
 
-void TellEveryone(const char* format,...);
+void TellEveryone(Header head,const char* format,...);
 void TryLogin(Entity entity);//System for Connections
 /*
 //thread functions

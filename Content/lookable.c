@@ -1,10 +1,6 @@
 #pragma once
 #include "ecs.h"
 #include "source.h"
-//
-// Created by DSU on 10/19/2021.
-//
-
 #include "lookable.h"
 void Look(Entity looker){
     Connection* conn = GetComponent(looker,connID);
@@ -19,7 +15,7 @@ void Look(Entity looker){
     For_System(lookID, lookIter) {
         Lookable *look = SysIterVal(lookIter, Lookable);
         if (look->isVisible==1 && lookIter.ent != looker) {
-            //this isn't us
+            //this isn't us.
             int testItem = HasComponent(lookIter.ent,itemID);
             char* prepend = testItem ? "<color=blue>" : "";
             char* append = testItem ? "</color>" : "";

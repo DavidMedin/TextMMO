@@ -1,7 +1,3 @@
-//
-// Created by DSU on 10/19/2021.
-//
-
 #include "ecs.h"
 #include "source.h"
 #include "item.h"

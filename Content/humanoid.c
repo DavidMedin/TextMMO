@@ -18,7 +18,7 @@ int UpdateHumanoid(Entity ent,char* line){
             return 0;
         }else if(strcmp(action, "help") == 0){
             //print some helpful stuff
-            Sendf(GetComponent(ent,connID),"Commands----------\n\t*look\t--look around\n\t*attack {enemy "
+            Sendf(GetComponent(ent,connID),msg,"Commands----------\n\t*look\t--look around\n\t*attack {enemy "
                                            "name}\t--attack that "
                                            "bitch\n\t*pick up {item}\t--pick up the item\n\t*help\t--you are "
                                            "here\n\t*quit\t--imagine quiting, I can't\n\t*join\t--join back in after quitting.");
@@ -36,7 +36,7 @@ int UpdateHumanoid(Entity ent,char* line){
             //didn't find it
             Connection* conn = GetComponent(ent,connID);
             if(conn){
-                Sendf(conn,"That item doesn't exist!");
+                Sendf(conn,msg,"That item doesn't exist!");
             }
             done:;
             return 0;
@@ -54,23 +54,23 @@ void HumanConnUpdate(Entity ent) {//System for Humanoid and Connection
     if (conn->actions.count > 0) {
         //do actions
         For_Each(conn->actions, actionIter) {
-            char *msg = Iter_Val(actionIter, char);
-            char *old = malloc(strlen(msg) + 1);//preserve message before strtok
-            strcpy(old, msg);
-            old[strlen(msg)] = 0;
-            if (strcmp(msg, "quit") == 0) {
+            char *message = Iter_Val(actionIter, char);
+            char *old = malloc(strlen(message) + 1);//preserve message before strtok
+            strcpy(old, message);
+            old[strlen(message)] = 0;
+            if (strcmp(message, "quit") == 0) {
                 AddComponent(ent, deleteID);
                 free(old);
                 break;
-            } else if (UpdateHumanoid(ent, msg)) {
-                TellEveryone("%s", old);
+            } else if (UpdateHumanoid(ent, message)) {
+                TellEveryone(msg, "%s", old);
             }
             free(old);
             RemoveElement(&actionIter);
         }
     }
 }
-void HumanAIUpdate(Entity ent);//System for Humanoid and AI
+//void HumanAIUpdate(Entity ent);//System for Humanoid and AI
 void HumanoidInit(void* human){
     Humanoid* oid = human;
     oid->hands[0] = 0;//empty left hand
@@ -102,14 +102,14 @@ void PickUp(Entity picker,int hand,Entity pickee){
     if(item && human){
         if(item->owner != 0){
             if(conn){
-                Sendf(conn,"<color=red>That item is already owned</color>");
+                Sendf(conn,msg,"<color=red>That item is already owned</color>");
             }
             return;
         }
         //pick up the item
         if(human->hands[hand] != 0){
             if(conn){
-                Sendf(conn,"<color=red>That hand is full</color>");
+                Sendf(conn,msg,"<color=red>That hand is full</color>");
             }
             return;
         }
@@ -122,7 +122,7 @@ void PickUp(Entity picker,int hand,Entity pickee){
             Lookable* lookee = GetComponent(pickee,lookID);
             char* name = "something?";
             if(lookee)  name = lookee->name;
-            Sendf(conn,"You picked up %s!",name);
+            Sendf(conn,msg,"You picked up %s!",name);
         }
     }else{
         log_error("Either the humanoid {E: %d - V: %d} or the item {E: %d - V: %d} doesn't have their respective "
@@ -154,7 +154,7 @@ void DropItem(Entity dropper,int hand){
         look->isVisible = 1;
     human->hands[hand] = 0;
     if(conn)
-        Sendf(conn,"You dropped an item");
+        Sendf(conn,msg,"You dropped an item");
 }
 void Attack(Entity attacker,int hand,Entity defender){
     //attacker is attacking defender with their {hand} hand!
@@ -175,18 +175,18 @@ void Attack(Entity attacker,int hand,Entity defender){
                 //there is an item in hand! Wack time
                 //MeatBag* defenderMeat = GetComponent(meatID,defender);
                 DealDamage(defender,wackItem->damage);
-                TellEveryone("%s delt %d to %s and now %s has %d health!",attackerLook->name,wackItem->damage,
+                TellEveryone(msg,"%s delt %d to %s and now %s has %d health!",attackerLook->name,wackItem->damage,
                              defenderLook->name,defenderLook->name,defenderMeat->health);
             }else{
                 //printf("Item doesn't have the Item component!\n");
                 //this guy is punching the other guy
                 int punchDamage = 5;
                 DealDamage(defender,punchDamage);
-                TellEveryone("%s punched %s for %d and now %s has %d health!",attackerLook->name,
+                TellEveryone(msg,"%s punched %s for %d and now %s has %d health!",attackerLook->name,
                              defenderLook->name,punchDamage,defenderLook->name,defenderMeat->health);
             }
             if(defenderMeat->health <= 0){
-                TellEveryone("Knockout!");
+                TellEveryone(msg,"Knockout!");
                 //DestroyEntity(defender);
                 AddComponent(defender,deleteID);//You must(!) call the Delete component's delete system to actually
                 // remove it!
@@ -206,7 +206,7 @@ void Attack(Entity attacker,int hand,Entity defender){
 void AttackString(Entity attacker,List tokens){
     //find the entity that cooresponds
     For_System(humanID,humanoidIter){
-        Humanoid* human = SysIterVal(humanoidIter,Humanoid);
+        //Humanoid* human = SysIterVal(humanoidIter,Humanoid);
         Lookable* look = GetComponent(humanoidIter.ent,lookID);
         if(look == NULL) continue;
         //search the name

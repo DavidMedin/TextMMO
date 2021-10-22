@@ -8,8 +8,8 @@ void Fatal(const char* func,int error){
 }
 char* names[] = {"Jimmy","Garret","Karina"};
 int nameCount = 3;
-void SendCallback(void* nothing);
-void ReceiveCallBack(void* nothing);
+//void SendCallback(void* nothing);
+//void ReceiveCallBack(void* nothing);
 void Listen(void* nothing){
     //create a new entity, and populate it with the right Components
     int rv;
@@ -98,7 +98,7 @@ void ReceiveCallBack(void* ent){
         nng_mtx_unlock(mut);
         return;
     }
-    int read = nng_aio_count(conn->input);
+    int read = (int)nng_aio_count(conn->input);
     if(read == 0){
         log_warn("read zero");
         nng_mtx_lock(mut);
@@ -112,7 +112,7 @@ void ReceiveCallBack(void* ent){
     log_info("received data -> '%s'",conn->receiveBuff);
     if(!conn->loggingIn && strcmp(conn->receiveBuff,"quit")==0) {
         //quiting
-        Sendf(conn, "Imagine quitting, I can't");
+        Sendf(conn,msg,"Imagine quitting, I can't");
     }
     //not quitting
     nng_mtx_lock(mut);
@@ -164,7 +164,7 @@ void FreeConnection(Connection* conn){
     //tell everyone
     For_System(connID,connIter){
         if(connIter.ent != *ENTFROMCOMP(conn)){
-            Sendf(connIter.ptr,"%s disconnected",conn->username);
+            Sendf(connIter.ptr,msg,"%s disconnected",conn->username);
         }
     }
     nng_aio_stop(conn->input);
@@ -192,20 +192,23 @@ void ServerEnd(){
 }
 
 int Send(Connection* conn){
+    if(conn->loggingIn) return 1;
     conn->sendBuffEnd = 0;
     nng_aio_wait(conn->output);
     nng_stream_send(conn->stream,conn->output);
 }
-int Sendf(Connection* conn,const char* format,...){
+int Sendf(Connection* conn,Header head,const char* format,...){
     va_list args;
     va_start(args,format);
     nng_aio_wait(conn->output);
-    vsprintf(conn->sendBuff,format,args);
+    *conn->sendBuff = head;
+    vsprintf(conn->sendBuff+sizeof(head),format,args);
     Send(conn);
     return 0;
 }
-int Sendfa(Connection* conn,const char* format,va_list args){
-    vsprintf(conn->sendBuff,format,args);
+int Sendfa(Connection* conn,Header head,const char* format,va_list args){
+    *conn->sendBuff = head,
+    vsprintf(conn->sendBuff+sizeof(head),format,args);
     Send(conn);
     return 0;
 }
@@ -249,11 +252,11 @@ void ConnectionInit(void* emptyConn) {
     conn->actions.start = NULL;
     conn->actions.end = NULL;
 }
-void TellEveryone(const char* format,...){
+void TellEveryone(Header head,const char* format,...){
     va_list args;
     va_start(args,format);
     For_System(connID,connIter){
-        Sendfa(connIter.ptr,format,args);
+        Sendfa(connIter.ptr,head,format,args);
     }
 }
 void TryLogin(Entity entity){
@@ -269,12 +272,12 @@ void TryLogin(Entity entity){
         Connection* otherConn = connIter.ptr;
         if(connIter.ent == entity || otherConn->loggingIn == 0) break;
         if(otherConn->username == NULL){
-            log_fatal("Entity {E: %d - V: %d} is not logging in, and their username")
+            log_fatal("Entity {E: %d - V: %d} is not logging in, and their username",ID(connIter.ent),VERSION(connIter.ent));
+            break;
         }
         if(strcmp(otherConn->username,conn->username)!=0){
             //send error to client
-            *conn->sendBuff = 1;
-            strcpy(conn->sendBuff + 1,"That username is taken.");
+            Sendf(conn, usr_err, "That username is taken.");
             Send(conn);
             return;
         }
@@ -286,17 +289,17 @@ void TryLogin(Entity entity){
         log_warn("Still remaining actions in 'stack'.");
     }
     Entity connEnt = *ENTFROMCOMP(conn);
-    Humanoid* human = AddComponent(connEnt,humanID);
+    AddComponent(connEnt,humanID);
     Lookable* look = AddComponent(connEnt,lookID);
     look->name = conn->username;
-    MeatBag* meat = AddComponent(connEnt,meatID);
+    AddComponent(connEnt,meatID);
     conn->loggingIn = 0;
 
-    Sendf(conn,"Welcome, %s! {E: %d - V: %d}",conn->username,ID(entity),VERSION(entity));
-    Sendf(conn,"type 'help' for help, I guess.");
+    Sendf(conn,msg,"Welcome, %s! {E: %d - V: %d}",conn->username,ID(entity),VERSION(entity));
+    Sendf(conn,msg,"type 'help' for help, I guess.");
     For_System(connID,connIter){
         if(connIter.ent != *ENTFROMCOMP(conn)){
-            Sendf(connIter.ptr,"%s connected!",conn->username);
+            Sendf(connIter.ptr,msg,"%s connected!",conn->username);
         }
     }
 }
