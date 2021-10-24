@@ -149,7 +149,7 @@ void* AddComponent(Entity entity,CompID component){
     if(!IsEntityValid(entity)){
         log_error("Tried to add component {%d} to invalid entity {E: %d - V: %d}!\n",component,ID(entity),VERSION
         (entity));
-        return;
+        return NULL;
     }
     For_Each(components,iter){
         if(component == iter.i){

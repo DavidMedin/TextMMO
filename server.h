@@ -13,7 +13,7 @@
 nng_stream_listener* listener;
 nng_aio* listenIO;//listen  for incoming connections
 
-typedef enum{msg,usr_err,login}Header;//This enum should be the first byte of any message to a client.
+typedef enum{msg=1,usr_err,login}Header;//This enum should be the first byte of any message to a client.
 
 
 typedef struct{

@@ -46,6 +46,7 @@ void SendCallback(void* voidConn){
     Connection* conn = GetComponent(entity,connID);
     if(conn==NULL){
         log_error("Failed to send message to old entity {E: %d - V: %d}!",ID(entity),VERSION(entity));
+        nng_mtx_unlock(mut);
         return;
     }
     log_info("sent message {%d : %s} to entity {E: %d - V: %d}",(char)*conn->sendBuff,conn->sendBuff+1,ID(entity),VERSION(entity));
@@ -192,7 +193,6 @@ void ServerEnd(){
 }
 
 int Send(Connection* conn){
-    if(conn->loggingIn) return 1;
     conn->sendBuffEnd = 0;
     nng_aio_wait(conn->output);
     nng_stream_send(conn->stream,conn->output);
@@ -207,8 +207,8 @@ int Sendf(Connection* conn,Header head,const char* format,...){
     return 0;
 }
 int Sendfa(Connection* conn,Header head,const char* format,va_list args){
-    *conn->sendBuff = (char)head,
-    vsprintf(&conn->sendBuff[1],format,args);
+    *(conn->sendBuff) = (char)head;
+    vsprintf(conn->sendBuff+1,format,args);
     Send(conn);
     return 0;
 }
@@ -254,10 +254,11 @@ void ConnectionInit(void* emptyConn) {
 }
 void TellEveryone(Header head,const char* format,...){
     va_list args;
-    va_start(args,format);
     For_System(connID,connIter){
+        va_start(args,format);//Reset args
         Sendfa(connIter.ptr,head,format,args);
     }
+    va_end(args);
 }
 void TryLogin(Entity entity){
     Connection* conn = GetComponent(entity,connID);
@@ -270,21 +271,23 @@ void TryLogin(Entity entity){
     //check if this name is taken
     For_System(connID,connIter){
         Connection* otherConn = connIter.ptr;
-        if(connIter.ent == entity || otherConn->loggingIn == 0) break;
+        if(connIter.ent == entity || otherConn->loggingIn == 1) continue;
         if(otherConn->username == NULL){
             log_fatal("Entity {E: %d - V: %d} is not logging in, and their username",ID(connIter.ent),VERSION(connIter.ent));
             break;
         }
-        if(strcmp(otherConn->username,conn->username)!=0){
+        if(strcmp(otherConn->username,conn->actions.start->data)==0){
             //send error to client
             Sendf(conn, usr_err, "That username is taken.");
+            Iter tmpIter = List_FindPointer(&conn->actions,conn->actions.start->data);
+            RemoveElement(&tmpIter);//We don't want to keep this string
             //Send(conn);
             return;
         }
     }
     conn->username = conn->actions.start->data;
     Iter tmpIter = List_FindPointer(&conn->actions,conn->username);
-    RemoveElementNF(&tmpIter);
+    RemoveElementNF(&tmpIter);//Freeing would free conn->username
     if(conn->actions.count > 0){
         log_warn("Still remaining actions in 'stack'.");
     }
