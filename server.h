@@ -6,9 +6,9 @@
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
 
-#include <ecs.h>
+#include "ecs.h"
 #include "Content/humanoid.h"
-#include <list.h>
+#include "list.h"
 
 nng_stream_listener* listener;
 nng_aio* listenIO;//listen  for incoming connections
@@ -16,6 +16,7 @@ nng_aio* listenIO;//listen  for incoming connections
 typedef enum{msg=1,usr_err,login}Header;//This enum should be the first byte of any message to a client.
 
 
+CompID connID;
 typedef struct{
     nng_aio* input;
     nng_aio* output;
@@ -40,7 +41,8 @@ int ServerInit();
 void ServerEnd();
 int Sendf(Connection* conn,Header head,const char* format,...);//writes to output, and sends
 int Sendfa(Connection* conn,Header hed,const char* format,va_list args);//writes to output, and sends
-int Send(Connection* conn);//sends
+void Send(Connection* conn);//sends
+void WriteByte(Connection* conn, char byte);
 void WriteOutput(Connection* conn,const char* format,...);//only writes to output
 int ReceiveListen(Connection* conn);
 

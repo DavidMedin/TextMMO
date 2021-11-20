@@ -1,72 +1,53 @@
 #include "source.h"
 
-void MeatBagInit(void* rawMeat){
-    MeatBag* you = rawMeat;
-    you->health = 100;
-}
- void LookableInit(void* lookable){
-    Lookable* look = lookable;
-    look->name = "Unknown Thing";
-    look->isVisible = 1;
-}
-void ItemInit(void* rawItem){
-    Item* item = rawItem;
-    item->damage = 20;
-    item->owner = 0;
-}
-void AIInit(void* rawAI){
-    ((AI*)rawAI)->friendly = 0;
-}
 void DeleteInit(void* n){}
 void DeleteDefered(Entity entity){
     log_debug("Defered Destruction",entity);
     DestroyEntity(entity);
 }
 
-void AIUpdate(Entity entity){
-    //goes for all the AI entities
-    AI* ai = GetComponent(entity,aiID);
-    //Humanoid* humanoid = GetComponent(humanID,entity);
-    //attack anything that is 'friendly' or doens't have an AI component but is a humanoid
-    List attackList = {0};
-    For_System(aiID,aiIter){
-        AI* testAI = aiIter.ptr;
-        if(testAI->friendly != ai->friendly){//these guys are enemies
-            Entity* tmpEnt = malloc(sizeof(Entity));
-            *tmpEnt = aiIter.ent;
-            PushBack(&attackList,tmpEnt,sizeof(Entity));
+void DoubleDamage(void* argBuffer,void* val){
+    int* intBuff = argBuffer;
+    int size = *intBuff;
+    for(int i = 0;i < size;i++){
+        if(intBuff[i*2 + 1] == dmg){
+            intBuff[i*2+2] *= 2;
         }
     }
-    //pick someone to attack
-    if(attackList.count != 0) {
-        tryAgain:;
-        unsigned int attackIndex = rand() % ((unsigned int) attackList.count);
-        For_Each(attackList, attackIter) {
-            if (attackIter.i == attackIndex) {
-                //Attack this person
-                Entity defender = *(int *) attackIter.this->data;
-                MeatBag *meat = GetComponent(defender,meatID);
-                if (meat != NULL) {
-                    if (meat->health <= 0) goto tryAgain;//this is simple. Don't @ me, John
-                    Attack(entity, 1, defender);
-                    break;
-                }
-            }
-        }
-    }
-
-    FreeList(&attackList);
 }
-
+void SwordEquip(Item* equip){
+    Sendf(GetComponent(equip->owner,connID),msg,"You picked up this sword!");
+    //add a mod
+    equip->modHandle = AddMod(GetComponent(equip->owner,humanID),DoubleDamage,0);
+}
+void SwordDequip(Item* equip){
+    Iter tmpIter = {0};
+    tmpIter.last = equip->modHandle->last;
+    tmpIter.next = equip->modHandle->next;
+    tmpIter.this = equip->modHandle;
+    tmpIter.root = equip->modHandle->root;
+    RemoveElement(&tmpIter);
+    Sendf(GetComponent(equip->owner,connID),msg,"You dropped this sword!");
+}
 int quitting = 0;
 int main(int argc,char** argv){
-    setbuf(stdout,0);//bruh why do I have to do this?
+    setbuf(stdout,0); ///bruh why do I have to do this?
     srand(time(NULL));
 
     FILE* logOut = fopen("log.txt","w");
     if(logOut==NULL)
         printf("Failed to open file!\n");
     log_add_fp(logOut,0);
+
+
+    //Test vector stuff
+    //Vec lst = VecMake(sizeof(int),5);
+    //log_debug("last %d",lst.last);
+    //*(int*)VecNext(&lst) = 2;
+    //log_debug("last val %d",*(int*)VecLast(&lst));
+    //*(int*)VecNext(&lst) = 5;
+    //log_debug("next val %d", *(int*)VecLast(&lst));
+
 
     ECSStartup();
 
@@ -75,10 +56,10 @@ int main(int argc,char** argv){
     humanID = RegisterComponent(sizeof(Humanoid),HumanoidInit,HumanoidDestroy);
     meatID = RegisterComponent(sizeof(MeatBag),MeatBagInit,NULL);
     itemID = RegisterComponent(sizeof(Item),ItemInit,NULL);
-    aiID = RegisterComponent(sizeof(AI),AIInit,NULL);
     connID = RegisterComponent(sizeof(Connection),ConnectionInit,DestroyConnection);
-
-
+    invID = RegisterComponent(sizeof(Inventory),InventoryInit,NULL);
+    cardID = RegisterComponent(sizeof(Card),Card_Init,NULL);
+    deckID = RegisterComponent(sizeof(Deck),DeckInit,NULL);
 
 
     if(ServerInit()){
@@ -86,29 +67,32 @@ int main(int argc,char** argv){
     }
     log_debug("started\n");
 
+
     nng_mtx_lock(mut);
     Entity sword = CreateEntity();
-    AddComponent(sword,itemID);
-    AddComponent(sword,lookID);
-    ((Item*) GetComponent(sword,itemID))->damage = 21;
-    ((Lookable*) GetComponent(sword,lookID))->name = "Sword";
+    Item* swordItem = AddComponent(sword,itemID);
+    swordItem->damage = 21;
+    swordItem->onEquip = SwordEquip;
+    swordItem->onDequip= SwordDequip;
+    ((Lookable*)AddComponent(sword,lookID))->name = "Sword";
 
 
     Entity orcishSword = CreateEntity();
-    AddComponent(orcishSword,itemID);
-    ((Item*) GetComponent(orcishSword,itemID))->damage = 25;
+    ((Item*) AddComponent(orcishSword,itemID))->damage = 25;
+    ((Lookable*) AddComponent(orcishSword,lookID))->name = "Orcish_Sword";
 
     Entity orc = CreateEntity();
-    AddComponent(orc,humanID);
     AddComponent(orc,meatID);
-    AddComponent(orc,aiID);
-    AddComponent(orc,lookID);
-    Humanoid* orcHuman = GetComponent(orc,humanID);
-    Lookable* orcLook = GetComponent(orc,lookID);
+    Humanoid* orcHuman = AddComponent(orc,humanID);
+    Lookable* orcLook = AddComponent(orc,lookID);
     orcLook->name = "the orc";
     orcHuman->hands[1] = orcishSword;
-    nng_mtx_unlock(mut);
 
+    Entity doubleEndedDildo = CreateEntity();
+    ((Item*)AddComponent(doubleEndedDildo,itemID))->damage = 69;
+    ((Lookable*)AddComponent(doubleEndedDildo,lookID))->name = "Double_Ended_Sword";
+
+    nng_mtx_unlock(mut);
     while(quitting != 1){
         nng_mtx_lock(mut);
         CallSystem(HumanConnUpdate,connID,humanID);

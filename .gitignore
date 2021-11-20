@@ -53,3 +53,7 @@ dkms.conf
 
 .idea
 cmake-build-debug
+.ccls-cache
+.ccls
+compile_commands.json
+!Content

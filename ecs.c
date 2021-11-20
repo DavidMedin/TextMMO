@@ -209,8 +209,7 @@ void _CallSystem(SystemFunc func, CompID component, ...){
     //printf("Couldn't find component with ID %d\n", component);
 }
 
-
-void* GetComponent(Entity entity,CompID component){
+void* GetComponent_(Entity entity,CompID component,int probable){//probable controls whether the caller *knows* the entities components.
     if(!IsEntityValid(entity)){
         //this is *a* way of testing if an entity is invalid
         return NULL;
@@ -225,7 +224,7 @@ void* GetComponent(Entity entity,CompID component){
                 return (char*)componentData+sizeof(int);
             }else{
                 //this entity doesn't have this component
-                log_error("Failed to get component {%d} from entity {E: %d - V: %d}!",component,ID(entity),VERSION
+                if(!probable) log_error("Failed to get component {%d} from entity {E: %d - V: %d}!",component,ID(entity),VERSION
                 (entity));
                 return NULL;
             }
@@ -234,6 +233,12 @@ void* GetComponent(Entity entity,CompID component){
     log_error("Tried to get component {%d} that doesn't exist!",component);
     return NULL;
 }
+void* GetComponent(Entity entity,CompID component){
+    return GetComponent_(entity,component,0);
+}
+void* GetComponentP(Entity entity,CompID component){
+    return GetComponent_(entity,component,1);
+}
 
 SysIter ForSysCreateIter(CompID component){
     SysIter newIter = {0};
@@ -241,11 +246,12 @@ SysIter ForSysCreateIter(CompID component){
     For_Each(components,compIter){
         if(compIter.i == component){
             //this is our component
+            newIter.component = component;
             Component* cmp = Iter_Val(compIter,Component);
-            newIter.i=cmp->data.packed.itemCount-1;
+            newIter.i=cmp->data.packed.itemCount-1; //we are 'decing', so might be bad
             List* list = &cmp->data.packed.list;
             newIter.arrayIter = MakeReverseIter(list);
-            Dec(&newIter.arrayIter);//big dumb
+            //Dec(&newIter.arrayIter);//big dumb
             newIter.comp = cmp;
             if(list->count == 0){
                 return newIter;
@@ -272,7 +278,8 @@ void ForSysDec(SysIter* iter){
     if(iter->i == 0) {iter->i--; return;}//we are done, just dec, and don't touch anything to do with pointers.
     if(((iter->i) % POOL_SIZE) == 0){
         //might not work, but this should mean that it is time to change arrays
-        if(Dec(&iter->arrayIter) == 0){
+        Dec(&iter->arrayIter);
+        if(ListCheck(iter->arrayIter) == 0){
             //no more arrays, do something that will cause ForSysTest to trip
             //return;
             //printf("done with array\n");
@@ -285,6 +292,7 @@ void ForSysDec(SysIter* iter){
         iter->ptr = iter->ptr-iter->comp->data.itemSize;//dec ptr
     iter->i--;
     iter->ent = *((int*)iter->ptr-1);//inc net
+    printf("");
 }
 
 int HasComponent(Entity entity, CompID component) {
@@ -299,5 +307,41 @@ int HasComponent(Entity entity, CompID component) {
     }
     log_error("Tried to call HasComponent with a component {%d} that doesn't exist!\n", component);
     return 0;
+}
+
+
+SysIter ForListSysCreateIter(CompID component,List* lst){
+    SysIter tmpIter = {0};
+    tmpIter.i = lst->count-1;
+    tmpIter.arrayIter = MakeReverseIter(lst);
+    tmpIter.component = component;
+    For_Each(components,compIter){
+        if(compIter.i == component){
+            tmpIter.comp = Iter_Val(compIter,Component);
+            break;
+        }
+    }
+    do {
+        //Dec(&tmpIter.arrayIter);
+        if (tmpIter.i == -1) return tmpIter;
+        //tmpIter.i--;
+        tmpIter.ent = *Iter_Val(tmpIter.arrayIter, Entity);
+        tmpIter.ptr = GetComponent(tmpIter.ent,component);
+    }while(tmpIter.ptr==0);
+    return tmpIter;
+}
+int ForListSysTest(SysIter iter){
+   if(iter.i == -1)
+       return 0;
+   return 1;
+}
+void ForListSysDec(SysIter* iter){
+    do {
+        Dec(&iter->arrayIter);
+        iter->i--;
+        if(iter->i==-1) return;
+        iter->ent = *Iter_Val(iter->arrayIter, Entity);
+        iter->ptr = GetComponent(iter->ent, iter->component);
+    }while(iter->ptr==0);
 }
 

@@ -8,19 +8,15 @@
 
 #include "ecs.h"
 #include "vec.h"
+//#include "Content/equipable.h"
 #include "termInput.h"
 #include <server.h>
 #include "Content/humanoid.h"
 #include "Content/lookable.h"
-CompID deleteID,meatID,itemID,aiID,connID;
-typedef struct{
-    int health;//max 100
-}MeatBag;
-typedef struct{
-    int damage;//how much damage when wacking somebody/thing
-    Entity owner;
-}Item;
-typedef struct{
-    char friendly;
-}AI;
+#include "Content/inventory.h"
+#include "Content/card.h"
+#include "Content/meatbag.h"
+#include "Content/item.h"
+#include "Content/deck.h"
+CompID deleteID;
 void DeleteDefered(Entity entity);

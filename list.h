@@ -23,8 +23,8 @@ typedef struct{
 	int i;
 }Iter;
 
-#define For_Each(list,iter) for(Iter iter=MakeIter(&list);Inc(&iter);)
-#define For_Rev_Each(list,iter) for(Iter iter=MakeReverseIter(&list);Dec(&iter);)
+#define For_Each(list,iter) for(Iter iter=MakeIter(&list);ListCheck(iter);Inc(&iter))
+#define For_Rev_Each(list,iter) for(Iter iter=MakeReverseIter(&list);ListCheck(iter);Dec(&iter))
 #define Iter_Val(iter,type) ((type*)(iter.this->data))
 
 Link AddNode(List* list,int index,void* data,size_t dataSize);
@@ -39,6 +39,10 @@ void* CreateBasket(size_t dataSize,void* data);//you are free to dealloate this,
 
 void NewIter(List* list,Iter* iter);
 Iter MakeIter(List* list);
+Iter LinkToIter(Link link);
 Iter MakeReverseIter(List* list);
-int Dec(Iter* iter); //like Inc, but the other way, and returns 0 when it hits the beginning.
-int Inc(Iter* iter);
+int ListCheck(Iter iter);
+void Dec(Iter* iter); //like Inc, but the other way, and returns 0 when it hits the beginning.
+void Inc(Iter* iter);
+
+void* GetNth(List* list,unsigned int n);

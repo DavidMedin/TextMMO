@@ -34,8 +34,16 @@ set(SOURCE_FILES
         server.c
         server.h
         source.h
+	Content/item.h Content/item.c
         deps/logger/log.c
-        Content/humanoid.c Content/humanoid.h Content/lookable.c Content/lookable.h Content/item.c Content/item.h)
+        Content/meatbag.h Content/meatbag.c
+        Content/humanoid.c Content/humanoid.h
+        Content/lookable.c Content/lookable.h
+        Content/item.c Content/item.h
+        Content/inventory.c Content/inventory.h
+        Content/card.c Content/card.h
+        Content/deck.h Content/deck.c
+)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 add_executable(Textlicious ${SOURCE_FILES})
 target_link_libraries(Textlicious nng m)

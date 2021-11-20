@@ -1,0 +1,260 @@
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 0
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 16
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 120
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 4
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 32
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 88
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 32
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 32
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:23: registering component of size 40
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/server.c:139: allocated listener
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/server.c:144: listening with listener
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/source.c:68: started
+
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {0}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 1 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 1 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 1 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {1}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 2 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 2 - V: 0}
+	Component now has {2} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 2 - V: 0}
+	Component now has {2} entities with it.
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {2}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 3 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {3} to entity {E: 3 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {3}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 4 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 4 - V: 0}
+	Component now has {3} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 4 - V: 0}
+	Component now has {3} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {7} to entity {E: 4 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {4}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 5 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 5 - V: 0}
+	Component now has {4} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 5 - V: 0}
+	Component now has {4} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {7} to entity {E: 5 - V: 0}
+	Component now has {2} entities with it.
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {5}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 6 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {8} to entity {E: 6 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {2} to entity {E: 3 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 3 - V: 0}
+	Component now has {5} entities with it.
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:39 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {6}, using or entity ID
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 7 - V: 0}
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 7 - V: 0}
+	Component now has {5} entities with it.
+2021-11-19 21:08:39 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 7 - V: 0}
+	Component now has {6} entities with it.
+2021-11-19 21:08:40 INFO  /home/david/repos/TextMMO/server.c:19: Found a connection
+2021-11-19 21:08:40 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:40 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {7}, using or entity ID
+2021-11-19 21:08:40 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 8 - V: 0}
+2021-11-19 21:08:40 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {5} to entity {E: 8 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/server.c:103: received data -> '  Jimy'
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 ->   Jimy
+
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {8}, using or entity ID
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 9 - V: 0}
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 9 - V: 0}
+	Component now has {6} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 9 - V: 0}
+	Component now has {7} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {7} to entity {E: 9 - V: 0}
+	Component now has {3} entities with it.
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {9}, using or entity ID
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 10 - V: 0}
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 10 - V: 0}
+	Component now has {7} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 10 - V: 0}
+	Component now has {8} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {7} to entity {E: 10 - V: 0}
+	Component now has {4} entities with it.
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:08:47 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {10}, using or entity ID
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 11 - V: 0}
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {8} to entity {E: 11 - V: 0}
+	Component now has {2} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {2} to entity {E: 8 - V: 0}
+	Component now has {2} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 8 - V: 0}
+	Component now has {9} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {3} to entity {E: 8 - V: 0}
+	Component now has {2} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {6} to entity {E: 8 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/server.c:43: sent message {3 : } to entity {E: 8 - V: 0}
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : Welcome,   Jimy! {E: 8 - V: 0}} to entity {E: 8 - V: 0}
+2021-11-19 21:08:47 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : type 'help' for help, I guess.} to entity {E: 8 - V: 0}
+2021-11-19 21:08:51 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'Gelp'
+2021-11-19 21:08:51 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:08:51 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> Gelp
+
+2021-11-19 21:08:51 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : Gelp} to entity {E: 8 - V: 0}
+2021-11-19 21:08:52 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'look'
+2021-11-19 21:08:52 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:08:52 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> look
+
+2021-11-19 21:08:52 DEBUG /home/david/repos/TextMMO/Content/lookable.c:29: adding to view index 0 : {E: 7 - V: 0}
+2021-11-19 21:08:52 DEBUG /home/david/repos/TextMMO/Content/lookable.c:29: adding to view index 1 : {E: 3 - V: 0}
+2021-11-19 21:08:52 DEBUG /home/david/repos/TextMMO/Content/lookable.c:29: adding to view index 2 : {E: 2 - V: 0}
+2021-11-19 21:08:52 DEBUG /home/david/repos/TextMMO/Content/lookable.c:29: adding to view index 3 : {E: 1 - V: 0}
+2021-11-19 21:08:52 INFO  /home/david/repos/TextMMO/Content/lookable.c:43: Performed 'Look'
+2021-11-19 21:08:52 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : You look around and see:
+	[0] <color=blue>Double_Ended_Sword</color>
+	[1] the orc
+	[2] <color=blue>Orcish_Sword</color>
+	[3] <color=blue>Sword</color>} to entity {E: 8 - V: 0}
+2021-11-19 21:08:56 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'target 1'
+2021-11-19 21:08:56 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:08:56 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> target 1
+
+2021-11-19 21:08:56 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:107: Target set to 3
+2021-11-19 21:08:57 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'play 0'
+2021-11-19 21:08:57 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:08:57 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> play 0
+
+2021-11-19 21:08:57 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:362: Running Mod_Target modification
+2021-11-19 21:08:57 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:367: Setting target to 3
+2021-11-19 21:08:57 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:375: Running Mod_Caster modification
+2021-11-19 21:08:57 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : You attack the orc for 20 heath, they have 80 now} to entity {E: 8 - V: 0}
+2021-11-19 21:08:58 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'show h'
+2021-11-19 21:08:58 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:08:58 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> show h
+
+2021-11-19 21:08:58 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : 	[0] Heal} to entity {E: 8 - V: 0}
+2021-11-19 21:09:00 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'play 0'
+2021-11-19 21:09:00 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:09:00 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> play 0
+
+2021-11-19 21:09:00 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:362: Running Mod_Target modification
+2021-11-19 21:09:00 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:367: Setting target to 3
+2021-11-19 21:09:00 DEBUG /home/david/repos/TextMMO/Content/humanoid.c:375: Running Mod_Caster modification
+2021-11-19 21:09:00 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : You healed the orc for 30 health, they have 110 now.} to entity {E: 8 - V: 0}
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'quit'
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : Imagine quitting, I can't} to entity {E: 8 - V: 0}
+2021-11-19 21:09:02 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> quit
+
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {0} to entity {E: 8 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:09:02 DEBUG /home/david/repos/TextMMO/source.c:5: Defered Destruction
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {0}
+	Down to size of 0.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {0} from entity {E: 8 - V: 0}
+	Component now has {0} entities with it.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {1} from entity {E: 8 - V: 0}
+	Component now has {8} entities with it.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {2} from entity {E: 8 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {3} from entity {E: 8 - V: 0}
+	Component now has {1} entities with it.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/server.c:154: destroying connection
+2021-11-19 21:09:02 WARN  /home/david/repos/TextMMO/server.c:67: Operation was cancelled
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {5}
+	Down to size of 0.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {5} from entity {E: 8 - V: 0}
+	Component now has {0} entities with it.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {6}
+	Down to size of 0.
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {6} from entity {E: 8 - V: 0}
+	Component now has {0} entities with it.
+2021-11-19 21:09:02 DEBUG /home/david/repos/TextMMO/ecs.c:134: Incremented version for entity {E: 8} to {V: 1}
+2021-11-19 21:09:02 INFO  /home/david/repos/TextMMO/ecs.c:135: Successfully destroyed entity {E: 8 - V: 0}
+2021-11-19 21:10:09 INFO  /home/david/repos/TextMMO/server.c:19: Found a connection
+2021-11-19 21:10:09 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {1} long
+2021-11-19 21:10:09 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 8 - V: 1}
+2021-11-19 21:10:09 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {5} to entity {E: 8 - V: 1}
+	Component now has {1} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'ghjg'
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> ghjg
+
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {11}, using or entity ID
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 12 - V: 0}
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 12 - V: 0}
+	Component now has {8} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 12 - V: 0}
+	Component now has {9} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {7} to entity {E: 12 - V: 0}
+	Component now has {5} entities with it.
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {12}, using or entity ID
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 13 - V: 0}
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {4} to entity {E: 13 - V: 0}
+	Component now has {9} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 13 - V: 0}
+	Component now has {10} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {7} to entity {E: 13 - V: 0}
+	Component now has {6} entities with it.
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/ecs.c:46: Deleted list is {0} long
+2021-11-19 21:10:13 DEBUG /home/david/repos/TextMMO/ecs.c:60: Version is of size {13}, using or entity ID
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:71: Creating entity {E: 14 - V: 0}
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {8} to entity {E: 14 - V: 0}
+	Component now has {3} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {2} to entity {E: 8 - V: 1}
+	Component now has {2} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {1} to entity {E: 8 - V: 1}
+	Component now has {11} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {3} to entity {E: 8 - V: 1}
+	Component now has {2} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {6} to entity {E: 8 - V: 1}
+	Component now has {1} entities with it.
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/server.c:43: sent message {3 : } to entity {E: 8 - V: 1}
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : Welcome, ghjg! {E: 8 - V: 1}} to entity {E: 8 - V: 1}
+2021-11-19 21:10:13 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : type 'help' for help, I guess.} to entity {E: 8 - V: 1}
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/server.c:103: received data -> 'quit'
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/server.c:43: sent message {1 : Imagine quitting, I can't} to entity {E: 8 - V: 1}
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/server.c:110: Obtained lock
+2021-11-19 21:10:17 DEBUG /home/david/repos/TextMMO/server.c:115: Connection action list length: 1 -> quit
+
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:170: Added component {0} to entity {E: 8 - V: 1}
+	Component now has {1} entities with it.
+2021-11-19 21:10:17 DEBUG /home/david/repos/TextMMO/source.c:5: Defered Destruction
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {0}
+	Down to size of 0.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {0} from entity {E: 8 - V: 1}
+	Component now has {0} entities with it.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {1}
+	Down to size of 10.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {1} from entity {E: 8 - V: 1}
+	Component now has {10} entities with it.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {2} from entity {E: 8 - V: 1}
+	Component now has {1} entities with it.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {3} from entity {E: 8 - V: 1}
+	Component now has {1} entities with it.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/server.c:154: destroying connection
+2021-11-19 21:10:17 WARN  /home/david/repos/TextMMO/server.c:67: Operation was cancelled
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {5}
+	Down to size of 0.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {5} from entity {E: 8 - V: 1}
+	Component now has {0} entities with it.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:106: Deallocated array from packed list from component {6}
+	Down to size of 0.
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:114: Removed compenent {6} from entity {E: 8 - V: 1}
+	Component now has {0} entities with it.
+2021-11-19 21:10:17 DEBUG /home/david/repos/TextMMO/ecs.c:134: Incremented version for entity {E: 8} to {V: 2}
+2021-11-19 21:10:17 INFO  /home/david/repos/TextMMO/ecs.c:135: Successfully destroyed entity {E: 8 - V: 1}

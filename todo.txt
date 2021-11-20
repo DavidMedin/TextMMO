@@ -1,0 +1,86 @@
+TODO:
+
+[x] Humanoid Action -> Equip item from inventory.
+[x] Humanoid & Lookable -> Show equipped
+
+More implicit getting of components. Don't check so
+much.
+
+I was going to say that we need more predictablility
+with the equipping and dropping of items here, but
+actually this isn't any where near where the code &
+gameplay should be, so I'll wait to pin that on the
+board for when the gameplay resembles the final plan
+for the game.
+
+[x] Humanoid -> Not case sensitive stuff
+	*Love me some variable length arrays. I <3 the stack.
+[x] Humanoid -> Add cards that are playable.
+[x] Humanoid -> Add a 'hand' that holds cards. Seperate 'inventory' that is not
+
+[x] Lookable & Connection -> Look by id./Attack by id.
+	Client shouldn't know about secret
+		doors unless they should know.
+	Client should tell Server target via
+		number.
+	Server needs to know what that number
+	means based on the client that is talking 
+	to it.
+	Client stores a 'view vecotr' for each connection.
+	Different entites are stored in it depending
+	on what the client can see. Have they completed
+	a quest? Do they have high enough perception? etc.
+	* A thing's Lookable can have conditions about
+	wheter or not it can be seen. For example, it might
+	have a quest vector of quest requirements. Or a perception
+	level, etc.
+Humanoid -> can have multiple named inventories. Dunno how. Vector?
+	tradable.
+[X] Lookable & Connection -> Enumerate the hand
+[X] Add Decks that contain cards. Controls the hand.
+Client & Server -> Client parses strings and sends
+    over a formated byte array of info. {msg,"Hello"},{equip,1},
+    {equip,d,2},{dequip,d}.
+Humanoid -> Deck slot.
+    Can equip to deck with 'equip d 1'. Must have a deck comp.
+    'drop d' will drop the deck.
+    Is this whole "drop,equip,etc." generalizable?
+Mess around with stats of decks and cards.
+Trade items (cards, decks, deck leathers, items, etc.).
+
+Humanoid -> Armor slot.
+
+Humanoid -> Remove Inventory Component.
+	* This will turn into a list or vector of
+	entities that are backpacks, satchels, whatever.
+	Those will have the Inventory component.
+Container/Inventory -> Rooms exist
+	* these guys have a list of sorts of entities
+	in the room. This is how we know what is
+	in the room. From here we don't need to set
+	the 'isVisible' member of Lookables, it'll just
+	not be in that list anymore.
+	* The container idea is that we could have seperate
+	component packed sets for parents.
+	So a parent could literally own its children.
+	It would have a packed set for the components of its
+	children, so when it wants to iterate over them (very
+	common) it'll be an array iteration, not a list traversal.
+	Very fast. However this is more game-breaking work that
+	takes more than a few brain cells. Big yikes.
+"Humanoid" -> Abstract 'humanoid' to different body parts.
+	* This allows the user to have different parts
+	like cyborg arm, or crazy spider torso that allows
+	for more arms, therfor more sword, for example.
+	Take ECS to the next level. Also this will be a GUI
+	nightmare. Maybe a custom UI serialization will need
+	to happen or something.
+
+Code Structure -> Maybe systems should have their components
+	passed into them. I don't know if variadic functions
+	are compatible with function prototypes but it is
+	worth investigating.
+	* At least if a caller implicitly has the required
+	information, the callee should have it as one of
+	its parameters. Just to reduce strain on the ECS
+	system.

@@ -22,10 +22,12 @@ void* VecNext(Vec* vec){
         free(vec->data);
         vec->data = tmpData;
     }
-    return &((char*)vec->data)[vec->last];
+    //return &((char*)vec->data)[vec->last];
+    return VecLast(vec);
 }
 void* VecLast(Vec* vec){
-    return &(((char*)vec->data)[vec->last]);
+    //return &(((char*)vec->data)[vec->last]);
+    return (((char*)vec->data) + vec->size * vec->last);
 }
 
 void VecDestroy(Vec* vec){

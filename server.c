@@ -4,7 +4,6 @@ extern void DoAction(char* line);
 //List conns = {0}; replaced by ecs
 void Fatal(const char* func,int error){
     log_error("%s error: %s",func,nng_strerror(error));
-
 }
 char* names[] = {"Jimmy","Garret","Karina"};
 int nameCount = 3;
@@ -20,14 +19,6 @@ void Listen(void* nothing){
     log_info("Found a connection");
     nng_mtx_lock(mut);
     Entity newPlayer = CreateEntity();
-    //AddComponent(newPlayer,humanID);
-    //AddComponent(newPlayer,lookID);
-    //static int next = 0;
-    //((Lookable *) GetComponent(newPlayer,lookID))->name = names[next];
-    //if(++next >= nameCount){
-    //    next = 0;
-    //}
-    //AddComponent(newPlayer,meatID);
     AddComponent(newPlayer,connID);
     Connection* conn = GetComponent(newPlayer,connID);
     conn->loggingIn = 1;
@@ -52,7 +43,6 @@ void SendCallback(void* voidConn){
     log_info("sent message {%d : %s} to entity {E: %d - V: %d}",(char)*conn->sendBuff,conn->sendBuff+1,ID(entity),VERSION(entity));
 }
 
-#define ENTFROMCOMP(comp) (int*)(((char*)comp)-sizeof(int))
 void ReceiveCallBack(void* ent){
     int entity = (int)ent;
     Connection* conn = GetComponent(entity,connID);
@@ -192,7 +182,7 @@ void ServerEnd(){
 
 }
 
-int Send(Connection* conn){
+void Send(Connection* conn){
     conn->sendBuffEnd = 0;
     nng_aio_wait(conn->output);
     nng_stream_send(conn->stream,conn->output);
@@ -211,6 +201,10 @@ int Sendfa(Connection* conn,Header head,const char* format,va_list args){
     vsprintf(conn->sendBuff+1,format,args);
     Send(conn);
     return 0;
+}
+void WriteByte(Connection* conn, char byte){
+    *conn->sendBuff = byte;
+    conn->sendBuffEnd++;
 }
 void WriteOutput(Connection* conn,const char* format,...){
     va_list args;
@@ -291,11 +285,13 @@ void TryLogin(Entity entity){
     if(conn->actions.count > 0){
         log_warn("Still remaining actions in 'stack'.");
     }
+
     Entity connEnt = *ENTFROMCOMP(conn);
     AddComponent(connEnt,humanID);
     Lookable* look = AddComponent(connEnt,lookID);
     look->name = conn->username;
     AddComponent(connEnt,meatID);
+    AddComponent(connEnt,invID);
     conn->loggingIn = 0;
     Sendf(conn,login,"");//tell the client that the login was sucessful
     Sendf(conn,msg,"Welcome, %s! {E: %d - V: %d}",conn->username,ID(entity),VERSION(entity));

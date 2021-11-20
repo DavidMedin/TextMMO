@@ -68,16 +68,20 @@ Iter List_FindPointer(List* list,void* ptr){
 
 Iter MakeIter(List* list){
 	Iter tmpIter={0};
-    tmpIter.i = -1;//I don't like this. because it is unsigned. but it increments first anyways so whatever.
+    tmpIter.i = 0;//I don't like this. because it is unsigned. but it increments first anyways so whatever.
 	tmpIter.root=list;
-	tmpIter.next=list->start;
+    tmpIter.this = list->start;
+	if(tmpIter.this) tmpIter.next=tmpIter.this->next;
+	else tmpIter.next = NULL;
+
 	return tmpIter;
 }
 Iter MakeReverseIter(List* list){
     Iter tmpIter={0};
     tmpIter.i=(int)list->count-1;
     tmpIter.root = list;
-    tmpIter.last = list->end;
+    tmpIter.this = list->end;
+    if(tmpIter.this) tmpIter.last = tmpIter.this->last;
     return tmpIter;
 }
 void _RemoveElement(Iter* iter,int doFreeData){
@@ -109,20 +113,21 @@ void* CreateBasket(size_t dataSize,void* data){
     memcpy(basket,data,dataSize);
     return basket;
 }
-int Dec(Iter* iter) { //like Inc, but the other way, and returns 0 when it hits the beginning.
+void Dec(Iter* iter) { //like Inc, but the other way, and returns 0 when it hits the beginning.
     iter->next=iter->this;
     iter->this=iter->last;
     if(iter->last)iter->last=iter->last->last;
     iter->i--;
-    return iter->this!=NULL;
 }
-int Inc(Iter* iter){
+void Inc(Iter* iter){
     iter->last=iter->this;
 	iter->this=iter->next;
 	if(iter->next) iter->next=iter->next->next;
 	//if(iter->last) iter->last=iter->last->next;
 	iter->i++;
-	return iter->this!=NULL;
+}
+int ListCheck(Iter iter){
+    return iter.this!=NULL;
 }
 //removes/frees everything in list
 //warning, this will not deallocate ANY of the data's data (but will dealocate the member "data")
@@ -131,4 +136,21 @@ void FreeList(List* list){
 	For_Each(*list,listIter){
 		RemoveElement(&listIter);
 	}
+}
+void* GetNth(List* list,unsigned int n){
+    For_Each(*list,listIter){
+        if(listIter.i == n){
+            return listIter.this->data;
+        }
+    }
+    return NULL;
+}
+Iter LinkToIter(Link link){
+    Iter iter = {0};
+    //maybe iterate to find 'i'
+    iter.last = link->last;
+    iter.next = link->next;
+    iter.root = link->root;
+    iter.this = link;
+    return iter;
 }
