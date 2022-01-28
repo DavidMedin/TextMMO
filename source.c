@@ -71,7 +71,7 @@ int main(int argc,char** argv){
     nng_mtx_lock(mut);
     Entity sword = CreateEntity();
     Item* swordItem = AddComponent(sword,itemID);
-    swordItem->damage = 21;
+    swordItem->damage = 22;
     swordItem->onEquip = SwordEquip;
     swordItem->onDequip= SwordDequip;
     ((Lookable*)AddComponent(sword,lookID))->name = "Sword";
@@ -88,9 +88,9 @@ int main(int argc,char** argv){
     orcLook->name = "the orc";
     orcHuman->hands[1] = orcishSword;
 
-    Entity doubleEndedDildo = CreateEntity();
-    ((Item*)AddComponent(doubleEndedDildo,itemID))->damage = 69;
-    ((Lookable*)AddComponent(doubleEndedDildo,lookID))->name = "Double_Ended_Sword";
+    Entity double_sword = CreateEntity();
+    ((Item*)AddComponent(double_sword,itemID))->damage = 69;
+    ((Lookable*)AddComponent(double_sword,lookID))->name = "Double_Ended_Sword";
 
     nng_mtx_unlock(mut);
     while(quitting != 1){
